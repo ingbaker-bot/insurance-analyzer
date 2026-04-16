@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<!-- 💡 v2.33 專為 iPad / 手機打造的 PWA (Web App) 標籤 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="保單智能分析">
+<meta name="theme-color" content="#1a1a2e">
+
+<title>保單智能分析｜總表升級版 v2.33</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- PDF 解析引擎 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<style>
+:root {
+  --ink: #1a1a2e; --ink-light: #4a4a6a; --ink-mute: #8888aa;
+  --cream: #faf8f3; --paper: #f4f1e8; --gold: #c9a84c;
+  --gold-light: #e8d49a; --gold-pale: #fdf6e3; --border: #ddd8cc;
+  --red: #c0392b; --green: #27ae60; --blue: #2980b9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans TC', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; -webkit-text-size-adjust: 100%; }
+
+/* ── Header ── */
+header {
+  background: var(--ink); padding: 0 40px; display: flex;
+  align-items: center; justify-content: space-between; height: 68px;
+  border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 100;
+  /* 針對有瀏海的 iPad/iPhone 預留安全距離 */
+  padding-top: env(safe-area-inset-top);
+}
+.logo { display: flex; align-items: baseline; gap: 12px; }
+.logo-main { font-family: 'Noto Serif TC', serif; font-size: 20px; color: var(--gold); letter-spacing: 2px; }
+.logo-ver { font-size: 12px; color: var(--gold-light); letter-spacing: 1px; border: 1px solid var(--gold-light); padding: 2px 8px; border-radius: 10px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-badge { font-size: 11px; background: var(--gold); color: var(--ink); padding: 4px 12px; border-radius: 20px; font-weight: 600; letter-spacing: 1px; }
+.header-count { font-size: 12px; color: var(--gold-light); }
+
+main { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
+
+/* ── Upload Panel ── */
+.upload-panel {
+  background: #fff; border: 1px solid var(--border); border-radius: 14px;
+  padding: 28px 32px; margin-bottom: 32px;
+}
+.panel-title { font-family: 'Noto Serif TC', serif; font-size: 16px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.panel-title::before { content: ''; width: 4px; height: 18px; background: var(--gold); border-radius: 2px; display: inline-block; }
+
+/* 匯率設定區塊 */
+.exchange-rate-box {
+  background: var(--gold-pale); border: 1px solid var(--gold-light); border-radius: 10px; 
+  padding: 14px 20px; margin-bottom: 18px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+#dropzone {
+  border: 2px dashed var(--border); border-radius: 10px;
+  background: var(--paper); padding: 40px; text-align: center;
+  transition: all 0.2s; margin-bottom: 14px;
+}
+#dropzone.drag-over { border-color: var(--gold); background: var(--gold-pale); }
+#dropzone .dz-icon { font-size: 40px; margin-bottom: 10px; }
+#dropzone .dz-title { font-family: 'Noto Serif TC', serif; font-size: 16px; margin-bottom: 6px; }
+#dropzone .dz-sub { color: var(--ink-mute); font-size: 13px; }
+#file-input { display: none; }
+
+.upload-btns { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.upload-btn {
+  flex: 1; min-width: 140px; padding: 12px 16px; border-radius: 8px; font-size: 14px;
+  cursor: pointer; font-family: 'Noto Sans TC', sans-serif; display: flex;
+  align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; border: 1.5px solid var(--border);
+  -webkit-tap-highlight-color: transparent; /* iPad 點擊優化 */
+}
+.btn-local { background: #fff; color: var(--ink); }
+.btn-local:hover { border-color: var(--ink); }
+.btn-gdrive { background: #fff; color: #1a73e8; border-color: #d2e3fc; }
+.btn-gdrive:hover { background: #e8f0fe; }
+.btn-multi { background: #fff; color: var(--green); border-color: #c8e6c9; }
+.btn-multi:hover { background: #e8f5e9; }
+
+#file-queue { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; min-height: 0; }
+.file-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+  border-radius: 20px; font-size: 12px; cursor: default;
+}
+.file-chip.pending { background: var(--paper); border: 1px solid var(--border); color: var(--ink-light); }
+.file-chip.done { background: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; }
+.file-chip.active { background: var(--gold-pale); border: 1px solid var(--gold); color: #8a6a00; }
+.file-chip.error { background: #fff5f5; border: 1px solid #ffcccc; color: var(--red); }
+.file-chip .rm { cursor: pointer; opacity: 0.5; font-size: 11px; margin-left: 2px; padding: 4px; }
+.file-chip .rm:hover { opacity: 1; }
+
+.analyze-btn {
+  width: 100%; padding: 16px; background: var(--gold); color: var(--ink);
+  border: none; border-radius: 10px; font-family: 'Noto Serif TC', serif;
+  font-size: 18px; font-weight: 700; letter-spacing: 2px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.analyze-btn:active:not(:disabled) { background: #b8963e; transform: translateY(2px); }
+.analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.progress-wrap { display: none; margin-top: 14px; background: var(--paper); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; }
+.progress-wrap.show { display: block; }
+.progress-label { font-size: 12px; color: var(--ink-light); margin-bottom: 7px; display: flex; justify-content: space-between; }
+.progress-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #e8c86a); width: 0%; transition: width 0.35s ease; }
+.error-box { display: none; margin-top: 12px; background: #fff5f5; border: 1px solid #ffcccc; border-radius: 8px; padding: 12px 16px; color: var(--red); font-size: 13px; }
+.error-box.show { display: block; }
+
+/* ── Tabs ── */
+.tabs-wrap { display: none; margin-bottom: 24px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabs-wrap.show { display: block; }
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); padding-bottom: 0; min-width: max-content; }
+.tab {
+  padding: 12px 20px; font-size: 14px; cursor: pointer; border-radius: 8px 8px 0 0;
+  font-family: 'Noto Sans TC', sans-serif; color: var(--ink-mute);
+  border: 1px solid transparent; border-bottom: none; transition: all 0.2s;
+  position: relative; bottom: -2px; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--ink); background: var(--paper); }
+.tab.active { background: #fff; color: var(--ink); border-color: var(--border); font-weight: 600; }
+.tab.tab-dashboard { color: var(--blue); font-weight: 600; }
+.tab.tab-dashboard.active { border-top: 3px solid var(--blue); color: var(--ink); }
+
+/* ── Panels ── */
+.result-panel { display: none; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 28px 32px; margin-bottom: 20px; }
+.result-panel.show { display: block; }
+.result-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+.result-header h2 { font-family: 'Noto Serif TC', serif; font-size: 19px; }
+.result-header p { font-size: 12px; color: var(--ink-mute); margin-top: 4px; }
+.result-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn-outline { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; color: var(--ink); font-size: 13px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; display: flex; align-items: center; gap: 5px; transition: border-color 0.2s; }
+.btn-outline:hover { border-color: var(--ink); }
+.btn-gold-sm { padding: 9px 14px; border: none; border-radius: 8px; background: var(--gold); color: var(--ink); font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; display: flex; align-items: center; gap: 5px; transition: background 0.2s; }
+.btn-gold-sm:hover { background: #b8963e; }
+
+/* ── Dashboard (總表專用) ── */
+.db-header-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+.db-main-card { background: var(--ink); color: #fff; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+.db-main-card::after { position: absolute; right: 20px; bottom: -10px; font-size: 60px; opacity: 0.08; }
+.db-main-card:nth-child(1)::after { content: '🛡️'; }
+.db-main-card:nth-child(2)::after { content: '⚠️'; }
+.db-main-card:nth-child(3)::after { content: '💰'; opacity: 0.15; }
+.db-card-title { font-size: 13px; letter-spacing: 1px; margin-bottom: 8px; font-family: 'Noto Serif TC', serif; font-weight: 600; }
+.db-val-input { 
+  background: transparent; border: none; border-bottom: 1px dashed transparent; 
+  font-family: 'Noto Serif TC', serif; font-size: 28px; font-weight: 700; 
+  width: 100%; outline: none; transition: all 0.2s; padding-bottom: 4px; box-sizing: border-box;
+}
+.db-val-input:focus { border-bottom-style: solid; background: rgba(255,255,255,0.4); border-radius: 4px; }
+
+/* 六大保障分區 */
+.db-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 30px; }
+.db-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.db-box-head { background: var(--paper); padding: 10px 16px; font-size: 14px; font-weight: 600; color: var(--ink); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+.db-box-body { padding: 12px 16px; background: #fff; }
+.db-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; }
+.db-item:last-child { margin-bottom: 0; }
+.db-item-lbl { color: var(--ink-light); }
+.db-item-val { 
+  border: 1px solid transparent; border-bottom: 1px dashed var(--border); 
+  text-align: right; font-weight: 500; color: var(--ink); font-family: 'DM Mono', monospace; 
+  width: 100px; padding: 2px 4px; outline: none; transition: all 0.2s; box-sizing: border-box;
+}
+.db-item-val:focus { border-color: var(--gold); background: var(--gold-pale); border-radius: 4px; }
+
+/* 情境矩陣表 */
+.matrix-wrap { border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; margin-top: 10px; }
+.matrix-title { background: var(--ink); color: #fff; padding: 12px 16px; font-family: 'Noto Serif TC', serif; font-size: 15px; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+.matrix-title span { font-size: 11px; font-family: 'Noto Sans TC', sans-serif; color: #aaa; font-weight: 300; }
+.matrix-table { width: 100%; border-collapse: collapse; text-align: center; }
+.matrix-table th { background: var(--paper); padding: 12px; font-size: 13px; color: var(--ink); border: 1px solid var(--border); font-weight: 600; }
+.matrix-table td { padding: 12px; font-size: 14px; border: 1px solid var(--border); background: #fff; }
+.matrix-table td:first-child { background: var(--gold-pale); font-weight: 600; color: var(--ink); }
+.matrix-input { 
+  width: 100%; text-align: center; border: 1px dashed transparent; font-family: 'DM Mono', monospace; 
+  font-weight: 600; color: var(--blue); font-size: 15px; padding: 6px; outline: none; background: transparent; box-sizing: border-box;
+}
+.matrix-input:hover { border-color: var(--border); }
+.matrix-input:focus { border-style: solid; border-color: var(--blue); background: #f0f7fb; border-radius: 6px; }
+
+/* 單張保單 CSS */
+.info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.info-card { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; position: relative; overflow: hidden; }
+.info-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: var(--gold); }
+.info-card .lbl { font-size: 10px; color: var(--ink-mute); letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+.info-card .val { font-family: 'Noto Serif TC', serif; font-size: 17px; font-weight: 600; }
+.info-card .sub { font-size: 11px; color: var(--ink-mute); margin-top: 3px; }
+
+/* 基本資訊區塊 */
+.meta-box { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; font-size: 13px; line-height: 1.7; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; }
+.meta-row > div { flex: 1; min-width: 200px; }
+.meta-label { font-weight: 600; color: var(--ink); display: inline-block; width: 100px; }
+.meta-list { margin-top: 4px; color: var(--ink-light); }
+.meta-list-item { padding-left: 100px; position: relative; }
+.meta-list-item::before { content: '•'; position: absolute; left: 88px; color: var(--gold); }
+
+/* 相容模式專屬 Alert */
+.compatibility-alert { background: #fff3e0; border: 1px solid #ffe0b2; color: #e65100; border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 8px; line-height: 1.6;}
+
+.table-wrap { background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.table-title { padding: 12px 16px; background: var(--ink); color: var(--gold); font-family: 'Noto Serif TC', serif; font-size: 14px; letter-spacing: 1px; }
+table { width: 100%; border-collapse: collapse; }
+thead th { background: var(--paper); padding: 9px 12px; font-size: 11px; color: var(--ink-light); text-align: left; font-weight: 500; border-bottom: 1px solid var(--border); white-space: nowrap; }
+tbody tr:hover { background: var(--gold-pale); }
+tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0; vertical-align: top; line-height: 1.5; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.badge-paid { background: #e3f2fd; color: #1565c0; }
+.badge-auto { background: #fff3e0; color: #e65100; }
+.badge-active { background: #e8f5e9; color: #2e7d32; }
+.badge-expired { background: #fce4ec; color: #c62828; }
+.badge-ref { background: #f3e5f5; color: #6a1b9a; }
+.detail-item { font-size: 11px; color: #777; padding: 1px 0; display: flex; gap: 4px; }
+.detail-item::before { content: '▸'; color: var(--gold); flex-shrink: 0; }
+
+/* Notes */
+.notes-wrap { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.notes-head { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: 'Noto Serif TC', serif; font-size: 14px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+.notes-editor { width: 100%; min-height: 120px; padding: 14px 16px; border: none; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; resize: vertical; outline: none; background: transparent; line-height: 1.8; overflow: hidden; box-sizing: border-box; }
+
+/* Raw text */
+.raw-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.raw-head { padding: 12px 16px; font-size: 13px; color: var(--ink-light); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--paper); user-select: none; }
+.raw-head div { display: flex; align-items: center; }
+.raw-head:hover { background: #ede9dc; }
+.raw-body { display: none; padding: 14px 16px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-mute); white-space: pre-wrap; line-height: 1.7; max-height: 260px; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
+.raw-body.show { display: block; }
+
+/* GDrive modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 14px; padding: 28px 32px; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal h3 { font-family: 'Noto Serif TC', serif; font-size: 18px; margin-bottom: 8px; }
+.modal p { font-size: 13px; color: var(--ink-mute); margin-bottom: 20px; line-height: 1.7; }
+.modal-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'DM Mono', monospace; outline: none; margin-bottom: 8px; }
+.modal-input:focus { border-color: var(--gold); }
+.modal-hint { font-size: 11px; color: var(--ink-mute); margin-bottom: 18px; line-height: 1.6; }
+.modal-btns { display: flex; gap: 10px; }
+.modal-btn-cancel { flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-size: 14px; }
+.modal-btn-ok { flex: 2; padding: 10px; border: none; border-radius: 8px; background: var(--gold); cursor: pointer; font-size: 14px; font-weight: 600; }
+
+/* iPad / Mobile Responsiveness */
+@media (max-width: 800px) {
+  .db-header-grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  header { padding: env(safe-area-inset-top) 16px 0; }
+  .logo-ver { display: none; }
+  main { padding: 20px 12px 60px; }
+  .upload-panel, .result-panel { padding: 18px 16px; }
+  .matrix-table th, .matrix-table td { padding: 8px; font-size: 12px; }
+  .matrix-input { font-size: 13px; }
+  .meta-list-item { padding-left: 16px; }
+  .meta-list-item::before { left: 4px; }
+  .info-grid { grid-template-columns: 1fr; }
+  
+  /* 優化行動版表單滾動 */
+  .table-wrap > div { -webkit-overflow-scrolling: touch; }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  body, main { width: 100% !important; margin: 0 !important; padding: 0 !important; background: #fff; }
+  
+  header, .upload-panel, .tabs-wrap, .result-actions, .raw-wrap { display: none !important; }
+  
+  #results-container { width: 100% !important; display: block !important; }
+  
+  .result-panel { 
+    display: block !important; border: none; padding: 0; box-shadow: none; margin-bottom: 0; 
+    page-break-before: always; break-before: page; 
+  }
+  .result-panel:first-child { page-break-before: auto; break-before: auto; }
+  
+  .db-header-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 12px !important; }
+  .db-main-card { width: auto !important; padding: 16px !important; }
+  
+  .info-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
+  .info-card { width: auto !important; padding: 12px !important; }
+  
+  .db-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  
+  .db-val-input { width: 100% !important; max-width: 100% !important; overflow: hidden !important; border: none !important; background: transparent !important; }
+  .db-item-val, .matrix-input { border: none !important; background: transparent !important; }
+  
+  .db-box, .info-card, .meta-box, .death-box, .notes-wrap, tr, .compatibility-alert { page-break-inside: avoid; break-inside: avoid; }
+  .notes-editor { border: none !important; resize: none !important; overflow: visible !important; height: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-main">保單智能分析</span>
+    <span class="logo-ver">總表升級版 v2.33</span>
+  </div>
+  <div class="header-right">
+    <span class="header-count" id="header-count"></span>
+    <span class="header-badge">純前端 · 無需 API</span>
+  </div>
+</header>
+
+<main>
+
+<div class="upload-panel">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+    <div class="panel-title" style="margin-bottom: 0;">上傳保單 PDF 或 載入專案</div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <button class="btn-outline" onclick="document.getElementById('project-input').click()">📂 載入專案</button>
+      <button id="save-project-btn" class="btn-gold-sm" style="display: none;" onclick="saveProject()">💾 儲存專案檔</button>
+      <button id="clear-all-btn" class="btn-outline" style="display: none; color: var(--red); border-color: #ffcccc; background: #fff5f5;" onclick="clearAllData()">🗑️ 清空資料</button>
+    </div>
+  </div>
+
+  <!-- 外幣匯率設定區塊 -->
+  <div class="exchange-rate-box">
+    <span style="font-size: 14px; font-weight: 600; color: #8a6a00;">💱 外幣匯率設定</span>
+    <label style="font-size: 13px; color: var(--ink);">美元 (USD) 兌台幣 = <input type="number" id="rate-usd" value="32.5" step="0.1" style="width: 60px; text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; margin-left: 4px;"></label>
+    <label style="font-size: 13px; color: var(--ink);">澳幣 (AUD) 兌台幣 = <input type="number" id="rate-aud" value="21.0" step="0.1" style="width: 60px; text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; margin-left: 4px;"></label>
+    <button class="btn-outline" style="padding: 4px 12px; border-color: var(--gold); color: #8a6a00;" onclick="updateRatesAndRender()">↻ 套用匯率</button>
+    <div style="font-size: 11px; color: var(--ink-mute); margin-left: auto;">(總表將依此匯率換算為新台幣)</div>
+  </div>
+
+  <div id="dropzone">
+    <div class="dz-icon">📋</div>
+    <div class="dz-title">拖曳 PDF 至此</div>
+    <div class="dz-sub">支援 iPad「檔案」直接選取，多份自動合併</div>
+  </div>
+  <input type="file" id="file-input" accept=".pdf" multiple>
+  <input type="file" id="project-input" accept=".json" style="display:none">
+
+  <div class="upload-btns">
+    <button class="upload-btn btn-local" onclick="document.getElementById('file-input').click()">💻 從本機/檔案選擇</button>
+    <button class="upload-btn btn-gdrive" onclick="showGDriveModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:4px;"><path d="M6.28 3h11.44l5.23 9.05-5.73 9.95H6.78L1.05 12.05z" fill="#4285F4"/><path d="M1.05 12.05L6.28 3h5.72L6.77 12.05z" fill="#0F9D58"/><path d="M11.99 3h5.73l5.23 9.05h-5.73z" fill="#F4B400"/></svg>
+      從雲端硬碟
+    </button>
+    <button class="upload-btn btn-multi" onclick="document.getElementById('file-input').click()">📂 多份同時上傳</button>
+  </div>
+
+  <div id="file-queue"></div>
+
+  <button class="analyze-btn" id="analyze-btn" disabled>
+    <span>🔍</span> 開始智慧分析與彙整
+  </button>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-text">準備中...</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  <div class="error-box" id="error-box"></div>
+</div>
+
+<div class="tabs-wrap" id="tabs-wrap">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div id="results-container"></div>
+
+</main>
+
+<div class="modal-overlay" id="gdrive-modal">
+  <div class="modal">
+    <h3>📂 從 Google 雲端硬碟</h3>
+    <p>請先在 Google Drive 將 PDF 設定為「知道連結的人均可查看」，<br>再貼上分享連結：</p>
+    <input class="modal-input" id="gdrive-url" placeholder="https://drive.google.com/file/d/.../view" type="text">
+    <div class="modal-hint">
+      操作步驟：Google Drive → 右鍵點擊 PDF → 共用 → 取得連結 → 變更為「知道連結的人」→ 複製連結
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="hideGDriveModal()">取消</button>
+      <button class="modal-btn-ok" onclick="loadFromGDrive()">載入 PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 全域匯率變數 ──
+window.exRates = { USD: 32.5, AUD: 21.0 };
+
+function updateRatesAndRender() {
+  window.exRates.USD = parseFloat(document.getElementById('rate-usd').value) || 32.5;
+  window.exRates.AUD = parseFloat(document.getElementById('rate-aud').value) || 21.0;
+  
+  const dashboardOverrides = {};
+  const inputs = document.querySelectorAll('.db-val-input, .db-item-val, .matrix-input, .db-notes-input');
+  inputs.forEach(input => { if (input.id) dashboardOverrides[input.id] = input.value; });
+  
+  renderUI();
+  
+  for (const [id, val] of Object.entries(dashboardOverrides)) {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+  }
+}
+
+// ── Utilities ──
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function getEntryById(id) { return fileQueue.find(f => String(f.id) === String(id)); }
+
+function parseNum(str) { 
+  if (!str) return 0;
+  if (typeof str === 'number') return str;
+  if (typeof str === 'string') {
+    if (str.includes('：')) str = str.split('：').pop();
+    str = str.replace(/[^\d.]/g, ''); 
+  }
+  return parseFloat(str) || 0; 
+}
+
+function formatNum(num) { 
+  if (num === 0) return '0';
+  return num % 1 !== 0 ? num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : num.toLocaleString('en-US'); 
+}
+
+// ── Init PDF.js ──
+pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+
+let fileQueue = [];   
+let activeTab = 'dashboard';
+
+// ── Drag & Drop ──
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('file-input');
+
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('drag-over'); });
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (files.length) addFiles(files);
+});
+fileInput.addEventListener('change', function() {
+  if (this.files && this.files.length) addFiles(Array.from(this.files));
+  this.value = '';
+});
+
+function addFiles(files) {
+  files.forEach(f => {
+    const id = Date.now() + Math.random();
+    fileQueue.push({ id, name: f.name, file: f, status: 'pending', data: null });
+  });
+  renderQueue();
+  document.getElementById('analyze-btn').disabled = false;
+  document.getElementById('error-box').classList.remove('show');
+}
+
+function renderQueue() {
+  const q = document.getElementById('file-queue');
+  const clearBtn = document.getElementById('clear-all-btn');
+  if (clearBtn) clearBtn.style.display = fileQueue.length > 0 ? 'flex' : 'none';
+
+  if (!fileQueue.length) { q.innerHTML = ''; return; }
+  q.innerHTML = fileQueue.map((f, i) => {
+    const icons = { pending: '📄', active: '⏳', done: '✅', error: '❌', merged: '🔗' };
+    const label = f.status === 'merged' ? `${f.name.replace(/\.pdf$/i,'')} <span style="font-size:10px;opacity:0.8">(已合併)</span>` : f.name.replace(/\.pdf$/i,'');
+    return `<div class="file-chip ${f.status}" id="chip-${f.id}">
+      ${icons[f.status]} ${label}
+      ${f.status === 'pending' ? `<span class="rm" onclick="removeFile(${i})">✕</span>` : ''}
+      </div>`;
+  }).join('');
+  
+  const totalCount = fileQueue.filter(f => f.status !== 'merged').length;
+  document.getElementById('header-count').textContent = totalCount > 0 ? `共 ${totalCount} 份保單` : '';
+}
+
+function removeFile(i) {
+  fileQueue.splice(i, 1); renderQueue();
+  if (!fileQueue.length) document.getElementById('analyze-btn').disabled = true;
+}
+
+function setChipStatus(id, status) {
+  const el = document.getElementById('chip-' + id);
+  if (el) {
+    el.className = 'file-chip ' + status;
+    const icons = { pending: '📄', active: '⏳', done: '✅', error: '❌', merged: '🔗' };
+    el.innerHTML = `${icons[status]} ${el.innerHTML.split(' ').slice(1).join(' ')}`;
+  }
+}
+
+function clearAllData() {
+  if (!confirm('確定要清空所有資料嗎？未儲存的分析結果將會遺失。')) return;
+  fileQueue = []; activeTab = 'dashboard';
+  document.getElementById('file-queue').innerHTML = '';
+  document.getElementById('tabs').innerHTML = '';
+  document.getElementById('tabs-wrap').classList.remove('show');
+  document.getElementById('results-container').innerHTML = '';
+  document.getElementById('header-count').textContent = '';
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('progress-wrap').classList.remove('show');
+  
+  const clearBtn = document.getElementById('clear-all-btn');
+  const saveBtn = document.getElementById('save-project-btn');
+  if(clearBtn) clearBtn.style.display = 'none';
+  if(saveBtn) saveBtn.style.display = 'none';
+  
+  document.getElementById('file-input').value = '';
+  document.getElementById('project-input').value = '';
+}
+
+// ── Google Drive ──
+function showGDriveModal() { document.getElementById('gdrive-modal').classList.add('show'); }
+function hideGDriveModal() { document.getElementById('gdrive-modal').classList.remove('show'); }
+async function loadFromGDrive() {
+  const url = document.getElementById('gdrive-url').value.trim();
+  if (!url) return;
+  const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!idMatch) { alert('無法識別 Google Drive 連結格式，請確認連結正確'); return; }
+  const fileId = idMatch[1];
+  const downloadUrl = 'https://drive.google.com/uc?export=download&id=' + fileId;
+  hideGDriveModal();
+  document.getElementById('gdrive-url').value = '';
+  const id = Date.now() + Math.random();
+  fileQueue.push({ id, name: `Google Drive (${fileId.substring(0,8)}...).pdf`, url: downloadUrl, status: 'pending', data: null });
+  renderQueue();
+  document.getElementById('analyze-btn').disabled = false;
+}
+
+// ── Extract & Parse ──
+async function extractText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('檔案讀取失敗'));
+    reader.onload = async (e) => {
+      try {
+        const pdf = await pdfjsLib.getDocument({
+          data: new Uint8Array(e.target.result), disableWorker: true,
+          disableRange: true, disableStream: true, isEvalSupported: false
+        }).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const c = await page.getTextContent();
+          text += c.items.map(it => (it.str||'') + (it.hasEOL ? '\n' : ' ')).join('') + '\n\n';
+        }
+        resolve(text);
+      } catch(err) { reject(err); }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function parseInsuranceText(text) {
+  const data = { 
+    insuredName: '', policyNumber: '', currency: '新台幣', 
+    naturalDeath: '', accidentDeath: '', policies: [], 
+    rawText: text, notes: '',
+    authorizer: '', bank: '', beneficiaries: [],
+    survivalDate: '', survivalAmount: '0', survivalTotal: 0,
+    isSummaryMode: false 
+  };
+
+  // 💡 一覽表/自訂格式相容模式
+  if (text.includes('保險繳費一覽表') || (!text.includes('保險項目與金額') && !text.includes('給付紀錄') && !text.includes('保單基本資料'))) {
+      data.isSummaryMode = true;
+      data.notes = '這是一份非標準格式的保單檔案（如：自訂保費繳費一覽表）。\n\n系統已為您盡力提取各險種與年繳保費。但由於此份文件缺乏「理賠給付條款」細項（例如：每日病房費 1500、初次罹癌 10萬 等字眼），因此這些保單【將無法計入】跨保單總表的醫療保障額度中。\n您可以直接檢視下方擷取出的清單。';
+
+      const nameMatch = text.match(/被保\s*險人[\s\n]*([\u4e00-\u9fff]{2,4})/);
+      if (nameMatch) {
+          data.insuredName = nameMatch[1];
+      } else {
+          const firstFewLines = text.substring(0, 300);
+          const possibleName = firstFewLines.match(/([\u4e00-\u9fff]{2,4})/);
+          data.insuredName = possibleName ? possibleName[1] : '客戶';
+      }
+
+      const lines = text.split('\n');
+      lines.forEach(line => {
+          line = line.replace(/(\d{3}\/)\s*(\d{1,2}\/)\s*(\d{1,2})/g, '$1$2$3'); 
+          line = line.replace(/終\s*身/g, '終身');
+          
+          if (/(保險|附約|醫療|傷害)/.test(line) && !line.includes('保險顧問') && !line.includes('保險繳費') && !line.includes('總保費合計')) {
+              const polNameMatch = line.match(/([A-Za-z0-9\u4e00-\u9fff]+(?:保險|附約|醫療|傷害|壽險))/);
+              const amtMatch = line.match(/([\d,]+)\s*(萬元|元|單位)/);
+              
+              if (polNameMatch) {
+                  const dates = line.match(/\d{2,3}\/\d{1,2}\/\d{1,2}/g) || [];
+                  let payEnd = '—';
+                  let coverEnd = line.includes('終身') ? '終身' : '—';
+                  
+                  if (dates.length >= 2) {
+                      payEnd = dates[1];
+                      if (dates.length >= 3 && !line.includes('終身')) coverEnd = dates[2];
+                  }
+
+                  let premium = '—';
+                  const premMatches = [...line.matchAll(/([\d,]+)\s*元/g)];
+                  if (premMatches.length > 0) {
+                      const amtVal = amtMatch ? amtMatch[1] : '';
+                      const validPrems = premMatches.map(m => m[1]).filter(v => v !== amtVal);
+                      
+                      if (validPrems.length > 0) {
+                          let targetPrem = validPrems.length >= 2 ? validPrems[1] : validPrems[0];
+                          premium = 'NT$' + targetPrem;
+                      }
+                  }
+
+                  data.policies.push({
+                      name: polNameMatch[1],
+                      amount: amtMatch ? amtMatch[0] : '—', 
+                      paymentEnd: payEnd, 
+                      coverEnd: coverEnd, 
+                      premium: premium,
+                      status: line.includes('正常') || line.includes('有效') ? '有效' : '參考', 
+                      statusType: 'ref', 
+                      details: ['(無條款細項，僅列示名稱)']
+                  });
+              }
+          }
+      });
+
+      const uniquePolicies = [];
+      const names = new Set();
+      data.policies.forEach(p => {
+          if (!names.has(p.name)) {
+              names.add(p.name);
+              uniquePolicies.push(p);
+          }
+      });
+      data.policies = uniquePolicies;
+
+      return data;
+  }
+
+  const currencyMatch = text.match(/保單幣別[\uff1a:\s]*([A-Za-z\u4e00-\u9fff]+)/);
+  if (currencyMatch) data.currency = currencyMatch[1].trim();
+  
+  // ── 基本資料擷取 ──
+  const authMatch = text.match(/授權人[\s：:]*([^\s、，,]+)/);
+  if (authMatch) data.authorizer = authMatch[1].trim();
+
+  const bankMatch = text.match(/(?:代繳金融機構|金融機構|扣款帳號)[\s：:]*([A-Za-z0-9\u4e00-\u9fff*]+)/);
+  if (bankMatch) data.bank = bankMatch[1].trim();
+
+  // 生存金/分紅金 
+  let totalSurv = 0;
+  const survMatches = [...text.matchAll(/(?:生存保險金|滿期保險金|還本金|紅利|增值回饋分享金)[^\d]*?(\d{2,3}\/\d{1,2}\/\d{1,2})[^\d]*?([\d,]+(?:\.\d+)?)/g)];
+  if (survMatches.length > 0) {
+    data.survivalDate = survMatches[0][1];
+    data.survivalAmount = survMatches[0][2].replace(/,/g, ''); 
+    survMatches.forEach(m => {
+      totalSurv += parseNum(m[2]);
+    });
+    data.survivalTotal = totalSurv;
+  }
+
+  // 受益人智慧表格對位法
+  const benStartMatch = text.match(/身故受益人資料|受益人資料/);
+  if (benStartMatch) {
+      const benStart = benStartMatch.index;
+      let benEnd = text.indexOf('服務人員資料', benStart);
+      if (benEnd === -1) benEnd = text.indexOf('保單利益權人', benStart);
+      if (benEnd === -1) benEnd = text.indexOf('契約變更', benStart);
+      if (benEnd === -1) benEnd = benStart + 1500; 
+
+      const benText = text.substring(benStart, benEnd);
+      const lines = benText.split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+      
+      let benHeaders = [];
+      const headerMatches = [...benText.matchAll(/(身故受益人|生存保險受益人|滿期受益人|祝壽金受益人)資料/g)];
+      headerMatches.forEach(m => benHeaders.push(m[1]));
+      
+      let tableCount = 0;
+      let currentType = benHeaders[0] || '受益人';
+
+      lines.forEach(line => {
+          if (/(身故受益人|生存保險受益人|滿期受益人|祝壽金受益人)資料/.test(line)) return;
+          
+          if (/姓名.*關係/.test(line) || /順位.*姓名/.test(line)) {
+              if (tableCount < benHeaders.length) {
+                  currentType = benHeaders[tableCount];
+              }
+              tableCount++;
+              return;
+          }
+          
+          if (line.length > 20 || /以上資料僅供參考|身分證號碼|申請上述保險金|實際金額|核定/.test(line)) return;
+          if (/^[\s\-\.\/]+$/.test(line) || line.includes('--')) return;
+          
+          if (line.length > 1 && !line.includes('保單無眷屬')) {
+              let cleanLine = line.replace(/^0\d\s+/, ''); 
+              data.beneficiaries.push(`【${currentType.replace('資料','')}】 ${cleanLine}`);
+          }
+      });
+  }
+  
+  if (data.beneficiaries.length === 0) {
+      const benMatches = [...text.matchAll(/[^\n]*受益人[^\n]*/g)];
+      benMatches.forEach(m => {
+         const line = m[0].replace(/\s+/g, ' ').trim();
+         if (line.includes('受益人的資料') || line === '受益人' || line.length < 5 || line.includes('保單無眷屬') || line.includes('主被保險人')) return;
+         if (line.length > 20 || /姓名.*關係|順位.*姓名|--/.test(line) || /申請上述保險金|核定|僅供參考/.test(line)) return;
+         data.beneficiaries.push(`【受益人】 ${line}`);
+      });
+  }
+  data.beneficiaries = [...new Set(data.beneficiaries)];
+
+  let extName = '';
+  const specificLineMatch = text.match(/保單號碼[^\n]*被保險人[\uff1a:\s]*([^\s\n]+)/);
+  if (specificLineMatch) {
+    extName = specificLineMatch[1];
+  } else {
+    const allNameM = [...text.matchAll(/被保險[人]?[\uff1a:\s]*([\u4e00-\u9fff\uff21-\uff3a\uff41-\uff5a\u25cb\u25ef\u3007\u2f00-\u2fd5ＯO]{2,6})/g)];
+    for (const m of allNameM) {
+      if (m[1] !== '保險項目' && m[1] !== '姓名' && m[1] !== '主被保險') {
+        extName = m[1];
+        break;
+      }
+    }
+  }
+  
+  if (extName) {
+    data.insuredName = extName.replace(/[\uff21-\uff3a]/g, c => String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[\u25cb\u25ef\u3007Ｏ]/g,'O').trim();
+  }
+
+  const policyM = text.match(/保單號碼[\uff1a:\s]*([A-Za-z0-9*\uff0a\-]+)/);
+  if (policyM) data.policyNumber = policyM[1].replace(/\uff0a/g,'*').trim();
+
+  let extNat = '', extAcc = '';
+  const explicitNatM = text.match(/自然身故[^\n]*?(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)[\s]*([\d,]+(?:\.\d+)?)/);
+  const explicitAccM = text.match(/意外身故[^\n]*?(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)[\s]*([\d,]+(?:\.\d+)?)/);
+  if (explicitNatM) extNat = explicitNatM[1];
+  if (explicitAccM) extAcc = explicitAccM[1];
+
+  let tblNat = '', tblAcc = '';
+  const yearRows = [...text.matchAll(/\b(\d{1,2})\s+([\d,]{3,}(?:\.\d+)?)\s+([\d,]{3,}(?:\.\d+)?)/g)];
+  for (const m of yearRows) {
+    const yr = parseInt(m[1]);
+    if (yr >= 1 && yr <= 60 && parseNum(m[2]) > 0) { 
+      tblNat = m[2]; 
+      tblAcc = m[3]; 
+    }
+  }
+  
+  data.naturalDeath = extNat || tblNat || '0';
+  data.accidentDeath = extAcc || tblAcc || '0';
+
+  const lines = text.split('\n');
+  const filteredLines = [];
+  for(let i=0; i < lines.length; i++) {
+    if (lines[i].includes('保單幣別：') && lines[i].includes('保單號碼：')) {
+        if (filteredLines.length > 0) filteredLines.pop(); 
+        while(i+1 < lines.length && lines[i+1].trim() === '') i++;
+        if (i+1 < lines.length && lines[i+1].includes('資料列印時間')) i++;
+        continue;
+    }
+    filteredLines.push(lines[i]);
+  }
+  
+  let mainSection = filteredLines.join('\n');
+  const startIdx = mainSection.indexOf('主被保險人'); 
+  if (startIdx !== -1) {
+    const endIdx = mainSection.search(/眷屬被保險人|上列欄表/);
+    mainSection = endIdx > startIdx ? mainSection.substring(startIdx, endIdx) : mainSection.substring(startIdx, startIdx + 10000);
+  }
+
+  const codeRegex = /\b([A-Z0-9][A-Z0-9&]{1,4})\s+[\u4e00-\u9fff]/g;
+  const foundCodes = []; let m;
+  
+  const skipWords = ['AD','NT','OK','PDF','COM','WWW','HTTP','TEL','FAX','ADD','EMAIL','ID','MAIL','SHAN'];
+  
+  while ((m = codeRegex.exec(mainSection)) !== null) {
+    if (!skipWords.includes(m[1]) && !/^\d+$/.test(m[1]) && !foundCodes.find(c => c.code === m[1])) {
+       foundCodes.push({ code: m[1], pos: m.index });
+    }
+  }
+
+  for (let i = 0; i < foundCodes.length; i++) {
+    const { code, pos } = foundCodes[i];
+    const seg = mainSection.substring(pos, i+1 < foundCodes.length ? foundCodes[i+1].pos : pos + 1500);
+    
+    let normalizedSeg = seg.replace(/(新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)\s*\n\s*([\d,]+(?:\.\d+)?)/g, '$1 $2');
+
+    const headerSeg = normalizedSeg.substring(0, 350); 
+    const nameLines = normalizedSeg.split('\n').slice(0, 5); 
+    
+    let cjkParts = [];
+    for (const line of nameLines) {
+      if (/(新台幣|美元|澳幣)|\d{2,3}\/\d{2}/.test(line)) break;
+      const cjk = line.replace(/^[A-Z0-9&]+\s*/, '').match(/^[\u4e00-\u9fff（）\(\)]+/);
+      if (cjk) cjkParts.push(cjk[0]);
+    }
+    let rawName = code + (cjkParts.length > 0 ? ' ' + cjkParts.join('') : '');
+
+    if (/身分證|姓名|生日|電話|信箱|地址|住所|收費|受益人/.test(rawName)) {
+        continue;
+    }
+
+    const amountM = normalizedSeg.match(/(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)\s*([\d,]+(?:\.\d+)?)/);
+    const allDates = headerSeg.match(/\d{2,3}\/\d{2}\/\d{2}/g) || [];
+    
+    const statusMatch = headerSeg.search(/自動墊繳|有效|繳費期滿|已終止|終止/);
+    let status = '有效', stt = 'active';
+    if (statusMatch !== -1) {
+      const matchText = headerSeg.substring(Math.max(0, statusMatch - 10), statusMatch + 10);
+      if (/繳費期滿/.test(matchText)) { status = '繳費期滿'; stt = 'paid'; }
+      else if (/自動墊繳/.test(matchText)) { status = '自動墊繳'; stt = 'auto'; }
+      else if (/終止/.test(matchText)) { status = '已終止'; stt = 'expired'; }
+    }
+
+    let premium = '—';
+    if (statusMatch !== -1) {
+      const textBeforeStatus = headerSeg.substring(0, statusMatch + 5);
+      const allAmounts = [...textBeforeStatus.matchAll(/(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)\s*([\d,]+(?:\.\d+)?)\s*元?/g)];
+      if (allAmounts.length > 0) premium = (data.currency || '新台幣') + ' ' + allAmounts[allAmounts.length - 1][1];
+    }
+    if (premium === '—' && stt === 'paid') premium = '0（繳清）';
+
+    const rawDetails = [];
+    const cleanLabel = (s) => (s||'').replace(/[「」“”]/g, '').trim();
+    const getSuffix = (s) => /[×xX＊*]/.test(s||'') || /百分率|比例|比率/.test(s||'') ? ' × 給付比例' : '';
+
+    const detPat1 = /[「“”]([^「」“”\n]{2,30})[」“”][^\n新台幣美元澳幣人民幣歐元外幣NT$US$]{0,35}(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)[\s]*([\d,]+(?:\.\d+)?)\s*元?([^\n]{0,30})/g;
+    let dm1; while ((dm1 = detPat1.exec(normalizedSeg)) !== null) rawDetails.push(`${cleanLabel(dm1[1])}：${dm1[2]}${getSuffix(dm1[3])}`);
+    
+    const detPat2 = /(每次住院總限額|每次門診)[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]{0,20}(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)[\s]*([\d,]+(?:\.\d+)?)/g;
+    let dm2; while ((dm2 = detPat2.exec(normalizedSeg)) !== null) rawDetails.push(`${cleanLabel(dm2[1])}：${dm2[2]}`);
+
+    const detPat3 = /(?:^|[\s「])([\d]+\s*[~～至\-－—]\s*[\d]+\s*日|[\d]+\s*日以上|加護病房[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|燒燙傷[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|看護[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|療養[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|手術[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|骨折[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|門診[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*|失能[^\n新台幣美元澳幣人民幣歐元外幣NT$US$「]*)\s*[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]{0,20}(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)[\s]*([\d,]+(?:\.\d+)?)\s*元?([^\n]{0,30})/g;
+    let dm3; while ((dm3 = detPat3.exec(normalizedSeg)) !== null) rawDetails.push(`${cleanLabel(dm3[1])}：${dm3[2]}${getSuffix(dm3[3])}`);
+
+    const detPat4 = /(繳費期間[內後]確診|第[^\n]*保單年度[^\n]*確診|第\s*\d+\s*[~～至\-－—]\s*\d+\s*日[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|第\s*\d+\s*日起[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|初次罹患[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|心臟、肺臟[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|胰臟、腎臟[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|骨折[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|門診[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*|失能[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]*)\s*[^\n新台幣美元澳幣人民幣歐元外幣NT$US$]{0,20}(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)[\s]*([\d,]+(?:\.\d+)?)/g;
+    let dm4; while ((dm4 = detPat4.exec(normalizedSeg)) !== null) rawDetails.push(`${cleanLabel(dm4[1])}：${dm4[2]}`);
+
+    const linesArr = normalizedSeg.split('\n');
+    for (const line of linesArr) {
+      const lineMatch = line.match(/^([^\n：:]+)[：:]\s*(.+)$/);
+      if (lineMatch && !line.match(/(新台幣|美元|澳幣)/)) {
+        const label = cleanLabel(lineMatch[1]);
+        const val = lineMatch[2].trim();
+        if (label.length >= 2 && label.length <= 40 && val.length > 0) {
+          if (/[×xX＊*]\s*\d+|\d+%|單位|保險金|給付/.test(val)) {
+            rawDetails.push(`${label}：${val}`);
+          }
+        }
+      }
+    }
+
+    const uniqueDetails = [];
+    for (let d of rawDetails) {
+      d = d.replace(/[」”\s]+：/, '：'); 
+      const parts = d.split('：');
+      if (parts.length < 2) continue;
+      const label = parts[0].trim();
+      const amt = parts.slice(1).join('：').trim();
+
+      const cleanStr = `${label}：${amt}`;
+
+      let isSub = false;
+      for (let j = 0; j < uniqueDetails.length; j++) {
+         const extParts = uniqueDetails[j].split('：');
+         const extLabel = extParts[0];
+         const extAmt = extParts.slice(1).join('：');
+         
+         if (extAmt === amt) {
+            if (extLabel.includes(label)) { isSub = true; break; }
+            if (label.includes(extLabel)) { uniqueDetails[j] = cleanStr; isSub = true; break; }
+         }
+      }
+      if (!isSub && !uniqueDetails.includes(cleanStr)) {
+          uniqueDetails.push(cleanStr);
+      }
+    }
+
+    data.policies.push({
+      name: rawName, amount: amountM ? amountM[1] : '0', 
+      paymentEnd: allDates[0] || '—', coverEnd: (/終身/.test(headerSeg.substring(0, 150)) ? '終身' : (allDates[1] || '—')),
+      status: status, statusType: stt, premium: premium,
+      details: uniqueDetails.slice(0,15)
+    });
+  }
+  return data;
+}
+
+// ── Smart Auto-Sum Logic ──
+function buildDashboardData() {
+  const db = {
+    insuredName: '', lifeTotal: 0, accidentTotal: 0, survivalTotalAcc: 0, latestSurvAmt: 0, latestSurvDate: '',
+    dailyWard: 0, miscLimit: 0, surgeryLimit: 0, 
+    cancerOneTime: 0, ciOneTime: 0, 
+    accidentWard: 0, accidentMisc: 0,
+    cancerWard: 0, cancerClinic: 0,
+    disabilityOneTime: 0, 
+    disabilityMonthly: 0,
+    fractureLimit: 0 
+  };
+
+  const doneFiles = fileQueue.filter(f => f.status === 'done');
+  if (!doneFiles.length) return db;
+  db.insuredName = doneFiles[0].data.insuredName; 
+
+  doneFiles.forEach(f => {
+    const d = f.data;
+    
+    // 排除相容模式
+    if (d.isSummaryMode) return;
+    
+    let rate = 1;
+    if ((d.currency || '').includes('美元')) rate = window.exRates.USD;
+    if ((d.currency || '').includes('澳幣')) rate = window.exRates.AUD;
+
+    db.lifeTotal += Math.round(parseNum(d.naturalDeath) * rate);
+    db.accidentTotal += Math.round(parseNum(d.accidentDeath) * rate);
+    db.survivalTotalAcc += Math.round((d.survivalTotal || 0) * rate);
+    
+    let survAmt = Math.round(parseNum(d.survivalAmount) * rate);
+    if (survAmt > 0 && (db.latestSurvAmt === 0 || d.survivalDate > db.latestSurvDate)) {
+       db.latestSurvAmt = survAmt;
+       db.latestSurvDate = d.survivalDate;
+    }
+
+    d.policies.forEach(p => {
+      const cleanPolName = p.name.replace(/\s+/g, '');
+      const isCancerPolicy = cleanPolName.includes('防癌') || cleanPolName.includes('癌症');
+
+      if (p.name.includes('重大疾病') || p.name.includes('特定傷病') || p.name.includes('重大傷病')) {
+          db.ciOneTime += Math.round(parseNum(p.amount) * rate);
+      }
+      
+      if (isCancerPolicy && !p.details.some(det => det.includes('確診') || det.includes('罹患'))) {
+         db.cancerOneTime += Math.round(parseNum(p.amount) * rate);
+      }
+
+      let polDailyWard = 0, polAccWard = 0, polCanWard = 0;
+      let polMisc = 0, polAccMisc = 0;
+      let polSurg = 0;
+      let polDisOne = 0, polDisMo = 0; 
+      let polFrac = 0;
+      let polCanClinic = 0;
+      let polCanOneTime = 0;
+
+      if (p.name.includes('意外') && (p.name.includes('醫療') || p.name.includes('實支')) && !p.name.includes('日額')) {
+          polAccMisc = Math.round(parseNum(p.amount) * rate);
+      }
+
+      p.details.forEach(det => {
+        const val = Math.round(parseNum(det) * rate);
+        if (!val) return;
+        
+        const isCancerItem = isCancerPolicy || det.replace(/\s+/g, '').includes('癌');
+        const isAccItem = p.name.includes('意外') || det.includes('意外');
+
+        if (det.includes('初次罹患') || det.includes('繳費期間') || det.includes('確診')) {
+           if (det.includes('繳費期間內')) {
+               if (p.statusType !== 'paid') polCanOneTime = Math.max(polCanOneTime, val);
+               else if (polCanOneTime === 0) polCanOneTime = val;
+           }
+           else if (det.includes('繳費期間後')) {
+               if (p.statusType === 'paid') polCanOneTime = Math.max(polCanOneTime, val);
+           }
+           else {
+               polCanOneTime = Math.max(polCanOneTime, val);
+           }
+           return; 
+        }
+
+        const isWard = (det.includes('病房') || det.includes('日額') || det.match(/\d+\s*[~～至\-－—]\s*\d+\s*日/) || (det.includes('傷害醫療') && p.name.includes('日額')) || (det.includes('住院醫療') && !det.includes('費用') && !det.includes('雜費')))
+                       && !det.includes('加護') && !det.includes('燒燙傷') && !det.includes('看護') && !det.includes('療養') && !det.includes('以上') && !det.includes('起') && !det.includes('門診') && !det.includes('手術');
+
+        const isMisc = (det.includes('雜費') || det.includes('醫療費用') || det.match(/實支實付.*限額/)) 
+                       && !det.includes('總限額') && !det.includes('病房') && !det.includes('日額') && !det.includes('手術') && !det.includes('門診') && !det.includes('每日');
+
+        if (isWard) {
+          if (isCancerItem) polCanWard = Math.max(polCanWard, val);
+          else if (isAccItem) polAccWard = Math.max(polAccWard, val);
+          else polDailyWard = Math.max(polDailyWard, val);
+        }
+        else if (isMisc) {
+          if (isCancerItem) {} 
+          else if (isAccItem) polAccMisc = Math.max(polAccMisc, val);
+          else polMisc = Math.max(polMisc, val);
+        }
+        else if (det.includes('普通手術') || det.includes('外科手術') || det.includes('門診手術') || det.includes('住院手術') || det.includes('手術費')) {
+          if (!isAccItem && !isCancerItem) {
+            polSurg = Math.max(polSurg, val);
+          }
+        }
+        else if (det.includes('門診') && isCancerItem && !det.includes('手術')) {
+          polCanClinic = Math.max(polCanClinic, val);
+        }
+        else if (det.includes('失能') || det.includes('殘廢') || det.includes('喪失工作能力')) {
+          if (det.includes('月') || det.includes('年') || det.includes('扶助')) {
+             polDisMo = Math.max(polDisMo, val); 
+          } else {
+             polDisOne = Math.max(polDisOne, val);
+          }
+        }
+        else if (det.includes('骨折')) {
+          polFrac = Math.max(polFrac, val);
+        }
+      });
+      
+      db.dailyWard += polDailyWard;
+      db.accidentWard += polAccWard;
+      db.cancerWard += polCanWard;
+      db.miscLimit += polMisc;
+      db.accidentMisc += polAccMisc;
+      db.surgeryLimit += polSurg;
+      db.cancerClinic += polCanClinic; 
+      db.disabilityOneTime += polDisOne; 
+      db.disabilityMonthly += polDisMo;
+      db.fractureLimit += polFrac;
+      db.cancerOneTime += polCanOneTime; 
+    });
+  });
+  return db;
+}
+
+// ── Render Dashboard (總表) ──
+function renderDashboard() {
+  const db = buildDashboardData();
+  
+  const sickWard = db.dailyWard;
+  const sickMisc = db.miscLimit;
+  const accWard = db.dailyWard + db.accidentWard;
+  const accMisc = db.miscLimit + db.accidentMisc;
+  const canWard = db.dailyWard + db.cancerWard; 
+  const canMisc = db.miscLimit;
+  
+  const canClinicStr = db.cancerClinic > 0 ? `${formatNum(db.cancerClinic)} / 日` : '化療/放療定額';
+
+  return `
+  <div class="result-panel ${activeTab === 'dashboard' ? 'show' : ''}" id="panel-dashboard">
+    <div class="result-header" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+      <div>
+        <h2 style="color: var(--blue);">📊 保單彙總一覽表 ( ${db.insuredName || '客戶'} )</h2>
+        <p>系統已自動加總各保單額度。<b>所有欄位皆可點擊修改</b>，以利最終校對確認。</p>
+      </div>
+      <div class="result-actions">
+        <button class="btn-outline" style="color: var(--blue); border-color: #bbdefb; background: #e3f2fd;" onclick="window.print()">🖨️ 列印完整報告 (另存 PDF)</button>
+        <button class="btn-gold-sm" onclick="saveProject()">💾 儲存專案檔</button>
+      </div>
+    </div>
+
+    <!-- 頂部三大天王並排設計 -->
+    <div class="db-header-grid">
+      <div class="db-main-card" style="background: #e3f2fd; border: 1px solid #bbdefb;">
+        <div class="db-card-title" style="color: #1565c0;">🛡️ 壽險總保額 (NT$)</div>
+        <input type="text" id="db-life" class="db-val-input" style="color: #0d47a1; border-bottom-color: rgba(21,101,192,0.3);" value="${formatNum(db.lifeTotal)}">
+      </div>
+      <div class="db-main-card" style="background: #ffffff; border: 1px solid #ddd8cc;">
+        <div class="db-card-title" style="color: #4a4a6a;">⚠️ 意外險總保額 (NT$)</div>
+        <input type="text" id="db-acc" class="db-val-input" style="color: #1a1a2e; border-bottom-color: rgba(74,74,106,0.3);" value="${formatNum(db.accidentTotal)}">
+      </div>
+      <div class="db-main-card" style="background: #e8f5e9; border: 1px solid #c8e6c9;">
+        <div class="db-card-title" style="color: #2e7d32;">💰 累計生存/分紅金 (NT$)</div>
+        <input type="text" id="db-surv-total" class="db-val-input" style="color: #1b5e20; border-bottom-color: rgba(46,125,50,0.3);" value="${formatNum(db.survivalTotalAcc)}">
+        <div style="font-size: 11px; color: #2e7d32; margin-top: 4px;">最近一期：NT$ ${formatNum(db.latestSurvAmt)} (${db.latestSurvDate || '無'})</div>
+      </div>
+    </div>
+
+    <!-- 中段：六大分類 -->
+    <div class="db-grid">
+      <div class="db-box">
+        <div class="db-box-head">🏥 醫療保障 (實支/日額)</div>
+        <div class="db-box-body">
+          <div class="db-item"><span class="db-item-lbl">病房費 (日)</span><input type="text" id="db-ward" class="db-item-val" value="${formatNum(db.dailyWard)}"></div>
+          <div class="db-item"><span class="db-item-lbl">手術費 (最高)<span style="font-size:10px; color:var(--ink-mute);">(× 給付比例)</span></span><input type="text" id="db-surg" class="db-item-val" value="${formatNum(db.surgeryLimit)}"></div>
+          <div class="db-item"><span class="db-item-lbl">醫療雜費 (次)</span><input type="text" id="db-misc" class="db-item-val" value="${formatNum(db.miscLimit)}"></div>
+        </div>
+      </div>
+      <div class="db-box">
+        <div class="db-box-head">⚠️ 意外醫療</div>
+        <div class="db-box-body">
+          <div class="db-item"><span class="db-item-lbl">意外實支 (次)</span><input type="text" id="db-acc-misc" class="db-item-val" value="${formatNum(db.accidentMisc)}"></div>
+          <div class="db-item"><span class="db-item-lbl">意外病房 (日)</span><input type="text" id="db-acc-ward" class="db-item-val" value="${formatNum(db.accidentWard)}"></div>
+          <div class="db-item"><span class="db-item-lbl">骨折未住院<span style="font-size:10px; color:var(--ink-mute);">(× 給付比例)</span></span><input type="text" id="db-frac" class="db-item-val" value="${formatNum(db.fractureLimit)}"></div>
+        </div>
+      </div>
+      <div class="db-box">
+        <div class="db-box-head">🎗️ 癌症與重大傷病</div>
+        <div class="db-box-body">
+          <div class="db-item"><span class="db-item-lbl">重疾/特傷 (一次)</span><input type="text" id="db-ci" class="db-item-val" value="${formatNum(db.ciOneTime)}"></div>
+          <div class="db-item"><span class="db-item-lbl">初罹癌 (一次)</span><input type="text" id="db-cancer" class="db-item-val" value="${formatNum(db.cancerOneTime)}"></div>
+          <div class="db-item"><span class="db-item-lbl">癌症住院 (日)</span><input type="text" id="db-can-ward" class="db-item-val" value="${formatNum(db.cancerWard)}"></div>
+        </div>
+      </div>
+      <div class="db-box">
+        <div class="db-box-head">♿ 失能與長照</div>
+        <div class="db-box-body">
+          <div class="db-item"><span class="db-item-lbl">失能一次金</span><input type="text" id="db-dis-one" class="db-item-val" value="${formatNum(db.disabilityOneTime)}"></div>
+          <div class="db-item"><span class="db-item-lbl">失能扶助金 (月/年)</span><input type="text" id="db-dis-mo" class="db-item-val" value="${formatNum(db.disabilityMonthly)}"></div>
+          <div class="db-item"><span class="db-item-lbl">豁免保費</span><input type="text" id="db-waiver" class="db-item-val" style="text-align:right" value="有/無"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部：情境矩陣 -->
+    <div class="matrix-wrap">
+      <div class="matrix-title">📋 就醫情況理賠矩陣 <span>(單位：新台幣)</span></div>
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th width="25%">就醫情況</th>
+            <th width="37.5%">🏥 門診 (每次限額)</th>
+            <th width="37.5%">🛌 住院 (每日/每次限額)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>一般疾病 (健保)</td>
+            <td><input type="text" id="mx-sick-clinic" class="matrix-input" value="健保"></td>
+            <td>
+              <input type="text" id="mx-sick-ward" class="matrix-input" style="font-size:13px; color:var(--ink-mute); margin-bottom:4px;" value="病房：${formatNum(sickWard)}/日">
+              <input type="text" id="mx-sick-misc" class="matrix-input" value="雜費：${formatNum(sickMisc)}/次">
+            </td>
+          </tr>
+          <tr>
+            <td>意外傷害</td>
+            <td><input type="text" id="mx-acc-clinic" class="matrix-input" value="${db.accidentMisc > 0 ? formatNum(db.accidentMisc) + ' / 次' : '0 / 次'}"></td>
+            <td>
+              <input type="text" id="mx-acc-ward" class="matrix-input" style="font-size:13px; color:var(--ink-mute); margin-bottom:4px;" value="病房：${formatNum(accWard)}/日">
+              <input type="text" id="mx-acc-misc" class="matrix-input" value="雜費：${formatNum(accMisc)}/次">
+            </td>
+          </tr>
+          <tr>
+            <td>癌症治療</td>
+            <td><input type="text" id="mx-can-clinic" class="matrix-input" value="${canClinicStr}"></td>
+            <td>
+              <input type="text" id="mx-can-ward" class="matrix-input" style="font-size:13px; color:var(--ink-mute); margin-bottom:4px;" value="病房：${formatNum(canWard)}/日">
+              <input type="text" id="mx-can-misc" class="matrix-input" value="標靶雜費：${formatNum(canMisc)}/次">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="notes-wrap" style="margin-top: 24px;">
+      <div class="notes-head">總表建議與綜合備註 <span>✏️ 可直接點擊編輯 (支援列印存檔)</span></div>
+      <textarea class="notes-editor db-notes-input" id="db-notes" placeholder="在此輸入您的綜合分析、保障缺口說明或後續規劃建議..." oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'"></textarea>
+    </div>
+
+  </div>`;
+}
+
+// ── Render Single Policy Panel ──
+function renderPolicy(f) {
+  const d = f.data;
+  
+  if (d.isSummaryMode) {
+      const tableRows = d.policies.map(p => {
+        return `<tr><td><strong>${p.name}</strong></td><td>${p.amount}</td>
+          <td>${p.paymentEnd}</td><td>${p.coverEnd}</td><td>${p.premium}</td>
+          <td><span class="badge badge-ref">${p.status}</span></td></tr>`;
+      }).join('');
+
+      return `
+      <div class="result-panel" id="panel-${f.id}">
+        <div class="result-header">
+          <div><h2>${d.insuredName || f.name.replace('.pdf','')} 保費繳費一覽表</h2><p>此為自訂格式彙總表｜整理時間：${new Date().toLocaleString()}</p></div>
+          <div class="result-actions">
+            <button class="btn-outline" style="color: var(--blue); border-color: #bbdefb; background: #e3f2fd;" onclick="window.print()">🖨️ 列印報告 (另存 PDF)</button>
+            <button class="btn-outline" onclick="copyResult('${f.id}')">📋 複製文字</button>
+            <button class="btn-gold-sm" onclick="saveProject()">💾 儲存專案檔</button>
+          </div>
+        </div>
+        
+        <div class="compatibility-alert">
+            <div>${d.notes.replace(/\n/g, '<br>')}</div>
+        </div>
+
+        <div class="table-wrap"><div class="table-title">📌 擷取保單清單 (無理賠細項可供加總)</div>
+          <div style="overflow-x:auto"><table><thead><tr><th>險種名稱</th><th>保險金額</th><th>繳費期滿</th><th>保障期滿</th><th>保險費 (年化)</th><th>狀態</th></tr></thead><tbody>${tableRows}</tbody></table></div>
+        </div>
+
+        <div class="raw-wrap">
+          <div class="raw-head" onclick="toggleRaw('${f.id}')">
+            <span>🔍 查看 PDF 原始純文字 (請確認原表資訊)</span>
+            <div><span id="raw-icon-${f.id}">▶</span></div>
+          </div>
+          <pre class="raw-body show" id="raw-${f.id}">${escHtml(d.rawText)}</pre>
+        </div>
+      </div>`;
+  }
+
+  const statusMap = { paid: ['繳費期滿','badge-paid'], auto: ['自動墊繳','badge-auto'], active: ['有效','badge-active'], expired: ['已終止','badge-expired'] };
+
+  const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
+
+  const tableRows = d.policies.map(p => {
+    const [st, sc] = statusMap[p.statusType] || [p.status, 'badge-active'];
+    const detHtml = p.details.length ? `<div style="margin-top:5px">${p.details.map(det => `<div class="detail-item">${det}</div>`).join('')}</div>` : '';
+    return `<tr><td><strong>${p.name}</strong>${detHtml}</td><td>${p.amount}</td>
+      <td>${p.paymentEnd}</td><td>${p.coverEnd}</td><td>${p.premium}</td>
+      <td><span class="badge ${sc}">${st}</span></td></tr>`;
+  }).join('');
+
+  return `
+  <div class="result-panel" id="panel-${f.id}">
+    <div class="result-header">
+      <div><h2>${d.insuredName || f.name.replace('.pdf','')} 保單明細</h2><p>保單號碼：${d.policyNumber}｜整理時間：${new Date().toLocaleString()}</p></div>
+      <div class="result-actions">
+        <button class="btn-outline" style="color: var(--blue); border-color: #bbdefb; background: #e3f2fd;" onclick="window.print()">🖨️ 列印完整報告 (另存 PDF)</button>
+        <button class="btn-outline" onclick="copyResult('${f.id}')">📋 複製文字</button>
+        <button class="btn-gold-sm" onclick="saveProject()">💾 儲存專案檔</button>
+      </div>
+    </div>
+    
+    <div class="meta-box">
+      <div class="meta-row">
+        <div><span class="meta-label">授權人</span> ${d.authorizer || '—'}</div>
+        <div><span class="meta-label">代繳機構</span> ${d.bank || '—'}</div>
+        <div><span class="meta-label">保單幣別</span> ${d.currency || '新台幣'}</div>
+      </div>
+      <div>
+        <span class="meta-label" style="margin-bottom:4px;">受益人資訊</span>
+        ${d.beneficiaries && d.beneficiaries.length 
+          ? `<div class="meta-list">${d.beneficiaries.map(b => `<div class="meta-list-item">${b}</div>`).join('')}</div>` 
+          : '<span style="color:var(--ink-mute)">—</span>'}
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="lbl">自然身故/全殘</div><div class="val">${curSym} ${formatNum(parseNum(d.naturalDeath))}</div></div>
+      <div class="info-card"><div class="lbl">意外身故/全殘</div><div class="val">${curSym} ${formatNum(parseNum(d.accidentDeath))}</div></div>
+      <div class="info-card"><div class="lbl">有效險種</div><div class="val">${d.policies.filter(p=>p.statusType!=='expired').length} 項</div></div>
+      <div class="info-card" style="border-left: 3px solid #27ae60;"><div class="lbl">累計生存/分紅金</div><div class="val">${curSym} ${formatNum(d.survivalTotal || 0)}</div><div class="sub">${d.survivalDate ? '最近一期：' + formatNum(parseNum(d.survivalAmount)) + ' (' + d.survivalDate + ')' : '無生存/分紅金紀錄'}</div></div>
+    </div>
+    
+    <div class="table-wrap"><div class="table-title">📌 投保險種明細</div>
+      <div style="overflow-x:auto"><table><thead><tr><th>險種名稱/給付細項</th><th>保險金額</th><th>繳費期滿</th><th>保障期滿</th><th>保險費</th><th>狀態</th></tr></thead><tbody>${tableRows}</tbody></table></div>
+    </div>
+
+    <!-- 備註區塊 -->
+    <div class="notes-wrap">
+      <div class="notes-head">單本保單備註 <span>✏️ 可直接點擊編輯 (支援列印存檔)</span></div>
+      <textarea class="notes-editor" id="notes-${f.id}" placeholder="在此輸入本保單專屬追蹤事項..." oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'">${d.notes || ''}</textarea>
+    </div>
+
+    <!-- 原始文字區塊 -->
+    <div class="raw-wrap">
+      <div class="raw-head" onclick="toggleRaw('${f.id}')">
+        <span>🔍 查看 PDF 原始文字</span>
+        <div>
+          <button class="btn-outline" style="padding: 2px 8px; font-size: 11px; margin-right: 8px;" onclick="copyRaw(event, '${f.id}')">📋 複製</button>
+          <button class="btn-outline" style="padding: 2px 8px; font-size: 11px; margin-right: 8px;" onclick="downloadRaw(event, '${f.id}')">💾 存檔 txt</button>
+          <span id="raw-icon-${f.id}">▶</span>
+        </div>
+      </div>
+      <pre class="raw-body" id="raw-${f.id}">${escHtml(d.rawText)}</pre>
+    </div>
+  </div>`;
+}
+
+// ── Raw Text Actions ──
+function toggleRaw(id) {
+  const el = document.getElementById('raw-' + id);
+  const icon = document.getElementById('raw-icon-' + id);
+  el.classList.toggle('show');
+  icon.textContent = el.classList.contains('show') ? '▼' : '▶';
+}
+
+function copyRaw(e, id) {
+  e.stopPropagation();
+  const text = document.getElementById('raw-' + id).textContent;
+  navigator.clipboard.writeText(text).then(() => alert('✅ 已複製原始文字到剪貼簿'));
+}
+
+function downloadRaw(e, id) {
+  e.stopPropagation();
+  const text = document.getElementById('raw-' + id).textContent;
+  const f = getEntryById(id);
+  const name = f.data ? (f.data.insuredName || '原始文件') : '原始文件';
+  const blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name}_原始文字_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.txt`;
+  a.click();
+}
+
+// ── UI Updates ──
+function renderUI() {
+  const done = fileQueue.filter(f => f.status === 'done');
+  const wrap = document.getElementById('tabs-wrap');
+  const tabs = document.getElementById('tabs');
+  const container = document.getElementById('results-container');
+  
+  const saveBtn = document.getElementById('save-project-btn');
+  const clearBtn = document.getElementById('clear-all-btn');
+
+  if (!done.length) { 
+    wrap.classList.remove('show'); container.innerHTML = ''; 
+    if (saveBtn) saveBtn.style.display = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+    return; 
+  }
+  
+  if (saveBtn) saveBtn.style.display = 'block';
+  if (clearBtn) clearBtn.style.display = 'flex';
+
+  wrap.classList.add('show');
+  let tabsHtml = `<div class="tab tab-dashboard ${activeTab === 'dashboard' ? 'active' : ''}" onclick="switchTab('dashboard')">📊 跨保單總表</div>`;
+  done.forEach((f, i) => {
+    const label = (f.data && f.data.insuredName) ? `${f.data.insuredName} (${i+1})` : f.name.substring(0,8);
+    tabsHtml += `<div class="tab ${activeTab === i ? 'active' : ''}" onclick="switchTab(${i})">📄 ${label}</div>`;
+  });
+  tabs.innerHTML = tabsHtml;
+
+  let panelsHtml = renderDashboard();
+  done.forEach(f => { panelsHtml += renderPolicy(f); });
+  container.innerHTML = panelsHtml;
+  
+  switchTab(activeTab);
+}
+
+function switchTab(target) {
+  activeTab = target;
+  
+  const tabNodes = document.getElementById('tabs').querySelectorAll('.tab');
+  tabNodes.forEach(t => t.classList.remove('active'));
+  if (target === 'dashboard') {
+    tabNodes[0].classList.add('active');
+  } else {
+    tabNodes[target + 1].classList.add('active');
+  }
+  
+  document.querySelectorAll('.result-panel').forEach(p => p.classList.remove('show'));
+  if (target === 'dashboard') {
+    document.getElementById('panel-dashboard').classList.add('show');
+  } else {
+    const doneFiles = fileQueue.filter(f => f.status === 'done');
+    const f = doneFiles[target];
+    if (f) document.getElementById('panel-' + f.id).classList.add('show');
+  }
+}
+
+// ── Main analyze ──
+document.getElementById('analyze-btn').addEventListener('click', async () => {
+  const pending = fileQueue.filter(f => f.status === 'pending');
+  if (!pending.length) return;
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true; btn.innerHTML = '<span>⏳</span> 智慧分析中...';
+  document.getElementById('progress-wrap').classList.add('show');
+
+  let done = 0;
+  for (const entry of pending) {
+    setChipStatus(entry.id, 'active');
+    document.getElementById('progress-fill').style.width = Math.round(done/pending.length*90) + '%';
+    
+    try {
+      let text;
+      if (entry.file) {
+        text = await extractText(entry.file);
+      } else if (entry.url) {
+        const resp = await fetch(entry.url);
+        if (!resp.ok) throw new Error('無法從 Google Drive 下載');
+        const blob = await resp.blob();
+        text = await extractText(new File([blob], entry.name, { type: 'application/pdf' }));
+      }
+
+      const parsed = parseInsuranceText(text);
+      
+      const cleanPolicyNum = (str) => (str||'').replace(/\s+/g, '');
+      const currentPolicyNum = cleanPolicyNum(parsed.policyNumber);
+      
+      const existIdx = fileQueue.findIndex(f => {
+         if (f.id === entry.id || f.status !== 'done' || !f.data || !f.data.policyNumber) return false;
+         return cleanPolicyNum(f.data.policyNumber) === currentPolicyNum;
+      });
+
+      if (existIdx !== -1 && currentPolicyNum !== '') {
+        let ext = fileQueue[existIdx];
+        
+        if (parsed.authorizer && !ext.data.authorizer) ext.data.authorizer = parsed.authorizer;
+        if (parsed.bank && !ext.data.bank) ext.data.bank = parsed.bank;
+        if (parsed.beneficiaries && parsed.beneficiaries.length > 0) {
+            ext.data.beneficiaries = [...new Set([...(ext.data.beneficiaries||[]), ...parsed.beneficiaries])];
+        }
+        
+        if (parsed.survivalTotal > 0 && (ext.data.survivalTotal || 0) === 0) {
+            ext.data.survivalTotal = parsed.survivalTotal;
+            ext.data.survivalAmount = parsed.survivalAmount;
+            ext.data.survivalDate = parsed.survivalDate;
+        }
+
+        parsed.policies.forEach(newP => {
+            if (!ext.data.policies.some(oldP => oldP.name === newP.name)) {
+                ext.data.policies.push(newP);
+            }
+        });
+
+        if (parseNum(parsed.naturalDeath) > parseNum(ext.data.naturalDeath)) ext.data.naturalDeath = parsed.naturalDeath;
+        if (parseNum(parsed.accidentDeath) > parseNum(ext.data.accidentDeath)) ext.data.accidentDeath = parsed.accidentDeath;
+
+        ext.data.rawText += `\n\n【合併附加檔案：${entry.name}】\n` + parsed.rawText;
+        
+        entry.data = parsed;
+        entry.status = 'merged';
+        setChipStatus(entry.id, 'merged');
+      } else {
+        entry.data = parsed;
+        entry.status = 'done'; 
+        setChipStatus(entry.id, 'done');
+      }
+
+    } catch(err) {
+      entry.status = 'error'; setChipStatus(entry.id, 'error');
+      const b = document.getElementById('error-box'); b.textContent = `⚠️ ${entry.name} 分析失敗：${err.message}`; b.classList.add('show');
+    }
+    done++;
+  }
+  
+  document.getElementById('progress-fill').style.width = '100%';
+  setTimeout(() => document.getElementById('progress-wrap').classList.remove('show'), 1000);
+  
+  activeTab = 'dashboard'; 
+  renderUI();
+  
+  btn.disabled = false; btn.innerHTML = '<span>🔍</span> 繼續新增分析';
+});
+
+// ── Policy Export Actions ──
+function copyResult(id) {
+  const entry = getEntryById(id); if (!entry || !entry.data) return;
+  const d = entry.data;
+  
+  if (d.isSummaryMode) {
+      let t = '保單清單擷取 v2.33\n' + '='.repeat(40) + '\n\n';
+      t += '被保險人：' + d.insuredName + '\n\n';
+      d.policies.forEach(p => {
+          t += '險種：' + p.name + '\n';
+      });
+      navigator.clipboard.writeText(t).then(() => alert('✅ 已複製清單到剪貼簿'));
+      return;
+  }
+
+  const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
+
+  let t = '保單智能分析 v2.33 報告\n' + '='.repeat(40) + '\n\n';
+  t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
+  t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
+  if (parseNum(d.survivalAmount) > 0) {
+    t += '累計生存/分紅金：' + curSym + ' ' + formatNum(d.survivalTotal || 0) + '\n';
+    t += '最近一期生存金：' + curSym + ' ' + formatNum(parseNum(d.survivalAmount)) + ' (' + d.survivalDate + ')\n';
+  }
+  t += '\n';
+  
+  t += '【保單基本資訊】\n';
+  t += '授權人：' + (d.authorizer || '—') + '\n';
+  t += '代繳機構：' + (d.bank || '—') + '\n';
+  t += '受益人：\n' + (d.beneficiaries && d.beneficiaries.length ? d.beneficiaries.map(b=>'  • '+b).join('\n') : '  —') + '\n\n';
+
+  t += '投保險種明細\n' + '-'.repeat(30) + '\n';
+  d.policies.forEach(p => {
+    t += '險種：' + p.name + '\n  保額：' + p.amount + '  保費：' + p.premium + '  狀態：' + p.status + '\n  保障至：' + p.coverEnd + '\n';
+    if (p.details && p.details.length) t += '  細項：' + p.details.join('、') + '\n';
+    t += '\n';
+  });
+  
+  const notesEl = document.getElementById('notes-' + id);
+  if (notesEl && notesEl.value.trim()) {
+    t += '單本保單備註\n' + '-'.repeat(30) + '\n' + notesEl.value + '\n\n';
+  }
+  
+  t += '分析時間：' + new Date().toLocaleString('zh-TW');
+  navigator.clipboard.writeText(t).then(() => alert('✅ 已複製完整報告到剪貼簿'));
+}
+
+function downloadTxt(id) {
+  const entry = getEntryById(id); if (!entry || !entry.data) return;
+  const d = entry.data;
+  
+  if (d.isSummaryMode) {
+      let t = '保單清單擷取 v2.33\n' + '='.repeat(40) + '\n\n';
+      t += '被保險人：' + d.insuredName + '\n\n';
+      d.policies.forEach(p => {
+          t += '險種：' + p.name + '\n';
+      });
+      const blob = new Blob(['\uFEFF' + t], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${d.insuredName || '客戶'}保單清單_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.txt`;
+      a.click();
+      return;
+  }
+
+  const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
+
+  let t = '保單智能分析 v2.33 報告\n' + '='.repeat(40) + '\n\n';
+  t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
+  t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
+  if (parseNum(d.survivalAmount) > 0) {
+    t += '累計生存/分紅金：' + curSym + ' ' + formatNum(d.survivalTotal || 0) + '\n';
+    t += '最近一期生存金：' + curSym + ' ' + formatNum(parseNum(d.survivalAmount)) + ' (' + d.survivalDate + ')\n';
+  }
+  t += '\n';
+  
+  t += '【保單基本資訊】\n';
+  t += '授權人：' + (d.authorizer || '—') + '\n';
+  t += '代繳機構：' + (d.bank || '—') + '\n';
+  t += '受益人：\n' + (d.beneficiaries && d.beneficiaries.length ? d.beneficiaries.map(b=>'  • '+b).join('\n') : '  —') + '\n\n';
+
+  t += '投保險種明細\n' + '-'.repeat(30) + '\n';
+  d.policies.forEach(p => {
+    t += '險種：' + p.name + '\n  保額：' + p.amount + '  保費：' + p.premium + '  狀態：' + p.status + '\n  保障至：' + p.coverEnd + '\n';
+    if (p.details && p.details.length) t += '  細項：' + p.details.join('、') + '\n';
+    t += '\n';
+  });
+  
+  const notesEl = document.getElementById('notes-' + id);
+  if (notesEl && notesEl.value.trim()) {
+    t += '單本保單備註\n' + '-'.repeat(30) + '\n' + notesEl.value + '\n\n';
+  }
+  
+  t += '分析時間：' + new Date().toLocaleString('zh-TW');
+  const blob = new Blob(['\uFEFF' + t], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${d.insuredName || '客戶'}保單明細_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.txt`;
+  a.click();
+}
+
+// ── JSON Export/Import ──
+function saveProject() {
+  const doneFiles = fileQueue.filter(f => f.status === 'done' || f.status === 'merged'); 
+  if (!doneFiles.length) { alert('沒有可儲存的分析結果！'); return; }
+
+  doneFiles.forEach(f => {
+    const notesEl = document.getElementById('notes-' + f.id);
+    if (notesEl) f.data.notes = notesEl.value;
+  });
+
+  const dashboardOverrides = {};
+  const inputs = document.querySelectorAll('.db-val-input, .db-item-val, .matrix-input, .db-notes-input');
+  inputs.forEach(input => { if (input.id) dashboardOverrides[input.id] = input.value; });
+
+  const exportData = {
+    version: '2.33',
+    files: fileQueue.map(f => ({ id: f.id, name: f.name, status: f.status, data: f.data })),
+    dashboard: dashboardOverrides
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  
+  const insuredName = doneFiles[0].data.insuredName || '客戶';
+  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download = `${insuredName}保單整理_${dateStr}.json`;
+  a.click();
+}
+
+document.getElementById('project-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const project = JSON.parse(evt.target.result);
+      if (!project.files) throw new Error();
+      
+      fileQueue = project.files;
+      activeTab = 'dashboard';
+      renderQueue();
+      renderUI();
+      
+      if (project.dashboard) {
+        for (const [id, val] of Object.entries(project.dashboard)) {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        }
+      }
+
+      setTimeout(() => {
+        document.querySelectorAll('.notes-editor').forEach(el => {
+          if (el.value) {
+            el.style.height = '';
+            el.style.height = el.scrollHeight + 'px';
+          }
+        });
+      }, 50);
+      
+      document.getElementById('analyze-btn').disabled = false;
+      const totalCount = fileQueue.filter(f => f.status !== 'merged').length;
+      document.getElementById('header-count').textContent = `共 ${totalCount} 份 (已載入專案)`;
+      document.getElementById('clear-all-btn').style.display = 'flex';
+      
+    } catch(err) {
+      alert('載入失敗：檔案格式不正確，請選擇由系統儲存的 .json 專案檔。');
+    }
+  };
+  reader.readAsText(file);
+  this.value = ''; 
+});
+</script>
+</body>
+</html>
