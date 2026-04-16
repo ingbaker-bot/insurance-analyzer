@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<!-- 💡 v2.33 專為 iPad / 手機打造的 PWA (Web App) 標籤 -->
+<!-- 💡 v2.34 專為 iPad / 手機打造的 PWA (Web App) 標籤 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="保單智能分析">
 <meta name="theme-color" content="#1a1a2e">
 
-<title>保單智能分析｜總表升級版 v2.33</title>
+<title>保單智能分析｜總表升級版 v2.34</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- PDF 解析引擎 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -302,7 +302,7 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
 <header>
   <div class="logo">
     <span class="logo-main">保單智能分析</span>
-    <span class="logo-ver">總表升級版 v2.33</span>
+    <span class="logo-ver">總表升級版 v2.34</span>
   </div>
   <div class="header-right">
     <span class="header-count" id="header-count"></span>
@@ -563,7 +563,7 @@ function parseInsuranceText(text) {
     isSummaryMode: false 
   };
 
-  // 💡 一覽表/自訂格式相容模式
+  // 💡 v2.34 增強型一覽表相容擷取引擎 (解決空白與保費陣列問題)
   if (text.includes('保險繳費一覽表') || (!text.includes('保險項目與金額') && !text.includes('給付紀錄') && !text.includes('保單基本資料'))) {
       data.isSummaryMode = true;
       data.notes = '這是一份非標準格式的保單檔案（如：自訂保費繳費一覽表）。\n\n系統已為您盡力提取各險種與年繳保費。但由於此份文件缺乏「理賠給付條款」細項（例如：每日病房費 1500、初次罹癌 10萬 等字眼），因此這些保單【將無法計入】跨保單總表的醫療保障額度中。\n您可以直接檢視下方擷取出的清單。';
@@ -579,42 +579,56 @@ function parseInsuranceText(text) {
 
       const lines = text.split('\n');
       lines.forEach(line => {
-          line = line.replace(/(\d{3}\/)\s*(\d{1,2}\/)\s*(\d{1,2})/g, '$1$2$3'); 
+          // 💡 v2.34 徹底消除日期中作怪的空白與 Tab
+          line = line.replace(/(\d{2,3})\s*\/\s*(\d{1,2})\s*\/\s*(\d{1,2})/g, '$1/$2/$3'); 
           line = line.replace(/終\s*身/g, '終身');
           
-          if (/(保險|附約|醫療|傷害)/.test(line) && !line.includes('保險顧問') && !line.includes('保險繳費') && !line.includes('總保費合計')) {
-              const polNameMatch = line.match(/([A-Za-z0-9\u4e00-\u9fff]+(?:保險|附約|醫療|傷害|壽險))/);
-              const amtMatch = line.match(/([\d,]+)\s*(萬元|元|單位)/);
+          // 放寬險種名稱匹配
+          if (/(保險|附約|醫療|傷害|專案|計畫|久久)/.test(line) && !line.includes('保險顧問') && !line.includes('保險繳費') && !line.includes('總保費合計')) {
+              // 抓取險種名稱
+              const polNameMatch = line.match(/([A-Za-z0-9\u4e00-\u9fff]+(?:保險|附約|醫療|傷害|壽險|專案|計畫|久久))/);
               
-              if (polNameMatch) {
+              // 抓取所有的金額數字 (包含保額、月繳、年繳、總繳)
+              const allMoneyMatches = [...line.matchAll(/([\d,]+(?:\.\d+)?)\s*(萬元|元|單位)/g)];
+              
+              if (polNameMatch && allMoneyMatches.length > 0) {
+                  // 第一個抓到的通常是保額
+                  const amtStr = allMoneyMatches[0][0]; 
+                  
                   const dates = line.match(/\d{2,3}\/\d{1,2}\/\d{1,2}/g) || [];
                   let payEnd = '—';
                   let coverEnd = line.includes('終身') ? '終身' : '—';
                   
                   if (dates.length >= 2) {
-                      payEnd = dates[1];
+                      payEnd = dates[1]; // 第二個通常是繳費期滿
                       if (dates.length >= 3 && !line.includes('終身')) coverEnd = dates[2];
+                  } else if (dates.length === 1) {
+                      payEnd = dates[0];
                   }
 
+                  // 💡 v2.34 序列式保費捕捉法：過濾出「元」結尾的純保費數字
+                  const premiumCandidates = allMoneyMatches
+                      .slice(1) // 排除第一個 (保額)
+                      .filter(m => m[2] === '元')
+                      .map(m => m[1]);
+
                   let premium = '—';
-                  const premMatches = [...line.matchAll(/([\d,]+)\s*元/g)];
-                  if (premMatches.length > 0) {
-                      const amtVal = amtMatch ? amtMatch[1] : '';
-                      const validPrems = premMatches.map(m => m[1]).filter(v => v !== amtVal);
-                      
-                      if (validPrems.length > 0) {
-                          let targetPrem = validPrems.length >= 2 ? validPrems[1] : validPrems[0];
-                          premium = 'NT$' + targetPrem;
+                  if (premiumCandidates.length > 0) {
+                      // 如果有兩個以上的金額 (如: 550元 6600元)，通常第二個是年繳化保費
+                      if (premiumCandidates.length >= 2) {
+                          premium = 'NT$' + premiumCandidates[1];
+                      } else {
+                          premium = 'NT$' + premiumCandidates[0];
                       }
                   }
 
                   data.policies.push({
                       name: polNameMatch[1],
-                      amount: amtMatch ? amtMatch[0] : '—', 
+                      amount: amtStr, 
                       paymentEnd: payEnd, 
                       coverEnd: coverEnd, 
                       premium: premium,
-                      status: line.includes('正常') || line.includes('有效') ? '有效' : '參考', 
+                      status: (line.includes('正常') || line.includes('有效')) ? '有效' : '參考', 
                       statusType: 'ref', 
                       details: ['(無條款細項，僅列示名稱)']
                   });
@@ -1429,7 +1443,7 @@ function copyResult(id) {
   const d = entry.data;
   
   if (d.isSummaryMode) {
-      let t = '保單清單擷取 v2.33\n' + '='.repeat(40) + '\n\n';
+      let t = '保單清單擷取 v2.34\n' + '='.repeat(40) + '\n\n';
       t += '被保險人：' + d.insuredName + '\n\n';
       d.policies.forEach(p => {
           t += '險種：' + p.name + '\n';
@@ -1440,7 +1454,7 @@ function copyResult(id) {
 
   const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
 
-  let t = '保單智能分析 v2.33 報告\n' + '='.repeat(40) + '\n\n';
+  let t = '保單智能分析 v2.34 報告\n' + '='.repeat(40) + '\n\n';
   t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
   t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
   if (parseNum(d.survivalAmount) > 0) {
@@ -1475,7 +1489,7 @@ function downloadTxt(id) {
   const d = entry.data;
   
   if (d.isSummaryMode) {
-      let t = '保單清單擷取 v2.33\n' + '='.repeat(40) + '\n\n';
+      let t = '保單清單擷取 v2.34\n' + '='.repeat(40) + '\n\n';
       t += '被保險人：' + d.insuredName + '\n\n';
       d.policies.forEach(p => {
           t += '險種：' + p.name + '\n';
@@ -1490,7 +1504,7 @@ function downloadTxt(id) {
 
   const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
 
-  let t = '保單智能分析 v2.33 報告\n' + '='.repeat(40) + '\n\n';
+  let t = '保單智能分析 v2.34 報告\n' + '='.repeat(40) + '\n\n';
   t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
   t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
   if (parseNum(d.survivalAmount) > 0) {
@@ -1539,7 +1553,7 @@ function saveProject() {
   inputs.forEach(input => { if (input.id) dashboardOverrides[input.id] = input.value; });
 
   const exportData = {
-    version: '2.33',
+    version: '2.34',
     files: fileQueue.map(f => ({ id: f.id, name: f.name, status: f.status, data: f.data })),
     dashboard: dashboardOverrides
   };
