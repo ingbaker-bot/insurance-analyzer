@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<!-- 💡 v2.35 專為 iPad / 手機打造的 PWA (Web App) 標籤 -->
+<!-- 💡 v2.36 專為 iPad / 手機打造的 PWA (Web App) 標籤 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="保單智能分析">
 <meta name="theme-color" content="#1a1a2e">
 
-<title>保單智能分析｜總表升級版 v2.35</title>
+<title>保單智能分析｜總表升級版 v2.36</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- PDF 解析引擎 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -70,7 +70,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
   flex: 1; min-width: 140px; padding: 12px 16px; border-radius: 8px; font-size: 14px;
   cursor: pointer; font-family: 'Noto Sans TC', sans-serif; display: flex;
   align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; border: 1.5px solid var(--border);
-  -webkit-tap-highlight-color: transparent; /* iPad 點擊優化 */
+  -webkit-tap-highlight-color: transparent;
 }
 .btn-local { background: #fff; color: var(--ink); }
 .btn-local:hover { border-color: var(--ink); }
@@ -182,6 +182,13 @@ main { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
 .matrix-input:hover { border-color: var(--border); }
 .matrix-input:focus { border-style: solid; border-color: var(--blue); background: #f0f7fb; border-radius: 6px; }
 
+/* 💡 v2.36 雙軌備註區塊 (Needs & Wants) */
+.notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+.notes-wrap { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.notes-grid .notes-wrap { margin-bottom: 0; }
+.notes-head { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: 'Noto Serif TC', serif; font-size: 14px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+.notes-editor { width: 100%; min-height: 120px; padding: 14px 16px; border: none; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; resize: vertical; outline: none; background: transparent; line-height: 1.8; overflow: hidden; box-sizing: border-box; }
+
 /* 單張保單 CSS */
 .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
 .info-card { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; position: relative; overflow: hidden; }
@@ -217,11 +224,6 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
 .detail-item { font-size: 11px; color: #777; padding: 1px 0; display: flex; gap: 4px; }
 .detail-item::before { content: '▸'; color: var(--gold); flex-shrink: 0; }
 
-/* Notes */
-.notes-wrap { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-.notes-head { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: 'Noto Serif TC', serif; font-size: 14px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
-.notes-editor { width: 100%; min-height: 120px; padding: 14px 16px; border: none; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; resize: vertical; outline: none; background: transparent; line-height: 1.8; overflow: hidden; box-sizing: border-box; }
-
 /* Raw text */
 .raw-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
 .raw-head { padding: 12px 16px; font-size: 13px; color: var(--ink-light); cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--paper); user-select: none; }
@@ -247,6 +249,7 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
 @media (max-width: 800px) {
   .db-header-grid { grid-template-columns: 1fr; }
   .info-grid { grid-template-columns: 1fr 1fr; }
+  .notes-grid { grid-template-columns: 1fr; } /* 手機版雙備註區改為上下排列 */
 }
 @media (max-width: 640px) {
   header { padding: env(safe-area-inset-top) 16px 0; }
@@ -258,8 +261,6 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
   .meta-list-item { padding-left: 16px; }
   .meta-list-item::before { left: 4px; }
   .info-grid { grid-template-columns: 1fr; }
-  
-  /* 優化行動版表單滾動 */
   .table-wrap > div { -webkit-overflow-scrolling: touch; }
 }
 
@@ -293,6 +294,9 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
   .db-item-val, .matrix-input { border: none !important; background: transparent !important; }
   
   .db-box, .info-card, .meta-box, .death-box, .notes-wrap, tr, .compatibility-alert { page-break-inside: avoid; break-inside: avoid; }
+  
+  /* 💡 確保雙備註區在列印時也是並排，且不被切斷 */
+  .notes-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 16px !important; page-break-inside: avoid; break-inside: avoid; }
   .notes-editor { border: none !important; resize: none !important; overflow: visible !important; height: auto !important; }
 }
 </style>
@@ -302,7 +306,7 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
 <header>
   <div class="logo">
     <span class="logo-main">保單智能分析</span>
-    <span class="logo-ver">總表升級版 v2.35</span>
+    <span class="logo-ver">總表升級版 v2.36</span>
   </div>
   <div class="header-right">
     <span class="header-count" id="header-count"></span>
@@ -322,7 +326,6 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
     </div>
   </div>
 
-  <!-- 外幣匯率設定區塊 -->
   <div class="exchange-rate-box">
     <span style="font-size: 14px; font-weight: 600; color: #8a6a00;">💱 外幣匯率設定</span>
     <label style="font-size: 13px; color: var(--ink);">美元 (USD) 兌台幣 = <input type="number" id="rate-usd" value="32.5" step="0.1" style="width: 60px; text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; margin-left: 4px;"></label>
@@ -563,10 +566,10 @@ function parseInsuranceText(text) {
     isSummaryMode: false 
   };
 
-  // 💡 v2.35 增強型一覽表相容擷取引擎 (解決空白與保費陣列問題)
+  // 💡 v2.36 終極一覽表相容擷取引擎 (完美解決日期空白與保費捕捉)
   if (text.includes('保險繳費一覽表') || (!text.includes('保險項目與金額') && !text.includes('給付紀錄') && !text.includes('保單基本資料'))) {
       data.isSummaryMode = true;
-      data.notes = '這是一份非標準格式的保單檔案（如：自訂保費繳費一覽表）。\n\n系統已為您盡力提取各險種與年繳保費。但由於此份文件缺乏「理賠給付條款」細項（例如：每日病房費 1500、初次罹癌 10萬 等字眼），因此這些保單【將無法計入】跨保單總表的醫療保障額度中。\n您可以直接檢視下方擷取出的清單。';
+      data.notes = '這是一份非標準格式的保單檔案（如：自訂保費繳費一覽表）。\n\n系統已為您盡力提取各險種、期滿日與年繳保費。但由於此份文件缺乏「理賠給付條款」細項（例如：每日病房費 1500 等字眼），因此這些保單【將無法計入】跨保單總表的醫療保障額度中。\n您可以直接檢視下方擷取出的清單。';
 
       const nameMatch = text.match(/被保\s*險人[\s\n]*([\u4e00-\u9fff]{2,4})/);
       if (nameMatch) {
@@ -579,42 +582,38 @@ function parseInsuranceText(text) {
 
       const lines = text.split('\n');
       lines.forEach(line => {
-          // 徹底消除日期中作怪的空白與 Tab
+          // 💡 v2.36 真空除白技術：強制把日期內多餘的空白拔除 (解決 107/  9/  2 問題)
           line = line.replace(/(\d{2,3})\s*\/\s*(\d{1,2})\s*\/\s*(\d{1,2})/g, '$1/$2/$3'); 
           line = line.replace(/終\s*身/g, '終身');
           
-          // 放寬險種名稱匹配
           if (/(保險|附約|醫療|傷害|專案|計畫|久久)/.test(line) && !line.includes('保險顧問') && !line.includes('保險繳費') && !line.includes('總保費合計')) {
-              // 抓取險種名稱
               const polNameMatch = line.match(/([A-Za-z0-9\u4e00-\u9fff]+(?:保險|附約|醫療|傷害|壽險|專案|計畫|久久))/);
-              
-              // 抓取所有的金額數字 (包含保額、月繳、年繳、總繳)
               const allMoneyMatches = [...line.matchAll(/([\d,]+(?:\.\d+)?)\s*(萬元|元|單位)/g)];
               
               if (polNameMatch && allMoneyMatches.length > 0) {
-                  // 第一個抓到的通常是保額
                   const amtStr = allMoneyMatches[0][0]; 
                   
+                  // 日期捕捉：陣列中第2個通常為繳費期滿，第3個為保障期滿
                   const dates = line.match(/\d{2,3}\/\d{1,2}\/\d{1,2}/g) || [];
                   let payEnd = '—';
                   let coverEnd = line.includes('終身') ? '終身' : '—';
                   
                   if (dates.length >= 2) {
-                      payEnd = dates[1]; // 第二個通常是繳費期滿
+                      payEnd = dates[1]; 
                       if (dates.length >= 3 && !line.includes('終身')) coverEnd = dates[2];
                   } else if (dates.length === 1) {
                       payEnd = dates[0];
                   }
 
-                  // 序列式保費捕捉法：過濾出「元」結尾的純保費數字
+                  // 保費捕捉：過濾出結尾是「元」的金額，避開保額
                   const premiumCandidates = allMoneyMatches
-                      .slice(1) // 排除第一個 (保額)
+                      .slice(1)
                       .filter(m => m[2] === '元')
                       .map(m => m[1]);
 
                   let premium = '—';
                   if (premiumCandidates.length > 0) {
-                      // 如果有兩個以上的金額 (如: 550元 6600元)，通常第二個是年繳化保費
+                      // 若有月繳與年繳，通常第二個數字即為年繳化保費
                       if (premiumCandidates.length >= 2) {
                           premium = 'NT$' + premiumCandidates[1];
                       } else {
@@ -1152,9 +1151,16 @@ function renderDashboard() {
       </table>
     </div>
     
-    <div class="notes-wrap" style="margin-top: 24px;">
-      <div class="notes-head">總表建議與綜合備註 <span>✏️ 可直接點擊編輯 (支援列印存檔)</span></div>
-      <textarea class="notes-editor db-notes-input" id="db-notes" placeholder="在此輸入您的綜合分析、保障缺口說明或後續規劃建議..." oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'"></textarea>
+    <!-- 💡 v2.36 雙軌備註區塊：Needs & Wants -->
+    <div class="notes-grid">
+        <div class="notes-wrap">
+          <div class="notes-head">🛡️ 綜合診斷與建議 (Needs) <span>✏️ 可點擊編輯</span></div>
+          <textarea class="notes-editor db-notes-input" id="db-notes" placeholder="在此輸入保障缺口說明或後續規劃建議..." oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'"></textarea>
+        </div>
+        <div class="notes-wrap">
+          <div class="notes-head">🎯 客戶期望與目標 (Wants) <span>✏️ 可點擊編輯</span></div>
+          <textarea class="notes-editor db-notes-input" id="db-wants" placeholder="在此輸入客戶的退休目標、理財期望 (Wants) 或特定醫療要求..." oninput="this.style.height=''; this.style.height=this.scrollHeight+'px'"></textarea>
+        </div>
     </div>
 
   </div>`;
@@ -1186,7 +1192,7 @@ function renderPolicy(f) {
             <div>${d.notes.replace(/\n/g, '<br>')}</div>
         </div>
 
-        <div class="table-wrap"><div class="table-title">📌 擷取保單清單 (無理賠細項可供加總)</div>
+        <div class="table-wrap"><div class="table-title">📌 擷取保單清單 (已智慧分析期滿日與保費)</div>
           <div style="overflow-x:auto"><table><thead><tr><th>險種名稱</th><th>保險金額</th><th>繳費期滿</th><th>保障期滿</th><th>保險費 (年化)</th><th>狀態</th></tr></thead><tbody>${tableRows}</tbody></table></div>
         </div>
 
@@ -1443,7 +1449,7 @@ function copyResult(id) {
   const d = entry.data;
   
   if (d.isSummaryMode) {
-      let t = '保單清單擷取 v2.35\n' + '='.repeat(40) + '\n\n';
+      let t = '保單清單擷取 v2.36\n' + '='.repeat(40) + '\n\n';
       t += '被保險人：' + d.insuredName + '\n\n';
       d.policies.forEach(p => {
           t += '險種：' + p.name + '\n';
@@ -1454,7 +1460,7 @@ function copyResult(id) {
 
   const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
 
-  let t = '保單智能分析 v2.35 報告\n' + '='.repeat(40) + '\n\n';
+  let t = '保單智能分析 v2.36 報告\n' + '='.repeat(40) + '\n\n';
   t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
   t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
   if (parseNum(d.survivalAmount) > 0) {
@@ -1489,7 +1495,7 @@ function downloadTxt(id) {
   const d = entry.data;
   
   if (d.isSummaryMode) {
-      let t = '保單清單擷取 v2.35\n' + '='.repeat(40) + '\n\n';
+      let t = '保單清單擷取 v2.36\n' + '='.repeat(40) + '\n\n';
       t += '被保險人：' + d.insuredName + '\n\n';
       d.policies.forEach(p => {
           t += '險種：' + p.name + '\n';
@@ -1504,7 +1510,7 @@ function downloadTxt(id) {
 
   const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
 
-  let t = '保單智能分析 v2.35 報告\n' + '='.repeat(40) + '\n\n';
+  let t = '保單智能分析 v2.36 報告\n' + '='.repeat(40) + '\n\n';
   t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
   t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
   if (parseNum(d.survivalAmount) > 0) {
@@ -1553,7 +1559,7 @@ function saveProject() {
   inputs.forEach(input => { if (input.id) dashboardOverrides[input.id] = input.value; });
 
   const exportData = {
-    version: '2.35',
+    version: '2.36',
     files: fileQueue.map(f => ({ id: f.id, name: f.name, status: f.status, data: f.data })),
     dashboard: dashboardOverrides
   };
