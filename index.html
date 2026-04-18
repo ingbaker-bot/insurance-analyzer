@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="保單智能分析">
 <meta name="theme-color" content="#1a1a2e">
 
-<title>保單智能分析｜總表升級版 v2.36</title>
+<title>保單智能分析｜總表升級版 v3.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- PDF 解析引擎 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -481,49 +481,30 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
     手動輸入現有保障，或從零開始討論需求，不需上傳 PDF
   </p>
 
-  <!-- 產生保戶自填連結 -->
+  <!-- 產生保戶自填專屬連結（簡化版）-->
   <div style="background:#fdf6ff;border:1px solid #e9d5ff;border-radius:10px;padding:14px 16px;margin-top:10px">
     <div style="font-size:12px;font-weight:500;color:#7c3aed;margin-bottom:10px">📤 產生保戶自填專屬連結</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <div style="flex:1;min-width:160px">
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+      <div style="flex:1;min-width:140px">
         <div style="font-size:10px;color:#a78bfa;margin-bottom:4px">您的名稱（顯示給保戶）</div>
-        <input type="text" id="share-agent-name" placeholder="例：李丞敏業務員"
-          style="width:100%;padding:7px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:13px;outline:none;font-family:'Noto Sans TC',sans-serif">
+        <input type="text" id="share-agent-name" placeholder="例：業務員李丞敏"
+          style="width:100%;padding:8px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:13px;outline:none;font-family:'Noto Sans TC',sans-serif;background:#fff">
       </div>
-      <div style="min-width:120px">
-        <div style="font-size:10px;color:#a78bfa;margin-bottom:4px;visibility:hidden">產生</div>
-        <button onclick="generateShareLink()"
-          style="width:100%;padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap">
-          產生連結
-        </button>
-      </div>
+      <button onclick="generateShareLink()"
+        style="padding:9px 18px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Noto Sans TC',sans-serif">
+        產生連結
+      </button>
     </div>
     <div id="share-link-output" style="display:none;margin-top:10px">
       <div style="font-size:10px;color:#a78bfa;margin-bottom:4px">專屬連結（複製後傳給保戶）</div>
       <div style="display:flex;gap:6px;align-items:center">
         <input type="text" id="share-link-url" readonly
-          style="flex:1;padding:6px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:11px;font-family:monospace;background:#f5f3ff;outline:none;color:#6d28d9">
+          style="flex:1;padding:7px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:11px;font-family:monospace;background:#f5f3ff;color:#6d28d9;outline:none">
         <button onclick="copyShareLink()"
-          style="padding:6px 12px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer;white-space:nowrap">
-          複製
-        </button>
+          style="padding:7px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">複製</button>
       </div>
-      <div style="font-size:10px;color:#a78bfa;margin-top:5px">保戶填完後會產生分享碼，業務員在下方輸入碼即可讀取結果</div>
+      <div style="font-size:10px;color:#a78bfa;margin-top:5px">保戶填完後點「提供給業務員」即可，業務員收到通知後聯絡保戶</div>
     </div>
-  </div>
-
-  <!-- 讀取保戶分享碼 -->
-  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-top:10px">
-    <div style="font-size:12px;font-weight:500;color:#166534;margin-bottom:10px">📥 讀取保戶分享碼</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" id="import-code-input" placeholder="輸入6位分享碼，如 A3K7M2" maxlength="10"
-        style="flex:1;padding:7px 10px;border:1.5px solid #bbf7d0;border-radius:7px;font-size:13px;outline:none;font-family:monospace;text-transform:uppercase;letter-spacing:3px">
-      <button onclick="importFromCode()"
-        style="padding:8px 14px;background:#166534;color:#fff;border:none;border-radius:7px;font-size:13px;cursor:pointer;white-space:nowrap">
-        讀取
-      </button>
-    </div>
-    <div id="import-result" style="display:none;margin-top:8px;font-size:11px;color:#166534"></div>
   </div>
 
   <div class="progress-wrap" id="progress-wrap">
@@ -1856,33 +1837,29 @@ function renderWantPanel() {
 
   return `
   <div class="result-panel ${shown ? 'show' : ''}" id="panel-want">
-
-    <!-- 被保險人標頭 -->
     <div class="want-embed">
+
+      <!-- ── 標頭：左名 / 中標 / 右印 ── -->
       <div class="want-embed-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <!-- 左：被保險人 -->
         <div style="display:flex;flex-direction:column;gap:5px;min-width:160px">
           <div style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1px">被保險人</div>
-          <div style="display:flex;align-items:baseline;gap:6px">
-            <input class="name-edit-inp" id="want-name-inp" value="${name}" placeholder="輸入姓名" oninput="wantCalc()"
-              style="font-size:18px;font-weight:700;width:130px">
-          </div>
+          <input class="name-edit-inp" id="want-name-inp" value="${name}" placeholder="輸入姓名" oninput="wCalc()"
+            style="font-size:18px;font-weight:700;width:150px">
           <div style="font-size:10px;color:rgba(255,255,255,.5)" id="want-orig-name"></div>
         </div>
-        <!-- 中：標題 -->
         <div style="text-align:center;flex:1">
           <h3 style="font-size:17px;letter-spacing:2px">🎯 四金需求規劃</h3>
           <div class="we-sub" style="margin-top:3px">Have 已自動帶入 · 填入 Want → 系統計算 Need 缺口</div>
         </div>
-        <!-- 右：列印按鈕 -->
         <div style="min-width:140px;display:flex;justify-content:flex-end">
-          <button onclick="printWantReport()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+          <button onclick="printWantReport()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap"
+            onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
             🖨️ 列印報告
           </button>
         </div>
       </div>
 
-      <!-- Have 帶入摘要 + 手動輸入模式切換 -->
+      <!-- ── Have 帶入摘要列 ── -->
       <div id="wh-summary-bar" style="padding:12px 20px;background:var(--paper);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center">
         <span style="font-size:11px;font-weight:500;color:var(--ink-light);margin-right:4px" id="wh-mode-label">✅ 已帶入 Have：</span>
         <span class="badge" style="background:#e3f2fd;color:#1565c0;font-size:11px" id="wh-life">壽險—</span>
@@ -1895,7 +1872,7 @@ function renderWantPanel() {
         </button>
       </div>
 
-      <!-- 手動輸入 Have 展開區（預設隱藏，直接討論模式展開）-->
+      <!-- ── 手動輸入 Have 展開區 ── -->
       <div id="wh-manual-area" style="display:none;padding:14px 20px;background:#fdf6ff;border-bottom:1px solid #e9d5ff">
         <div style="font-size:11px;font-weight:600;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
           <span>✏️ 手動輸入現有保障（Have）</span>
@@ -1905,42 +1882,42 @@ function renderWantPanel() {
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">壽險保額（萬）</div>
             <input type="number" id="wm-life" value="0" step="10" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">重大傷病一次金（萬）</div>
             <input type="number" id="wm-ci" value="0" step="10" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">癌症一次金（萬）</div>
             <input type="number" id="wm-cancer" value="0" step="10" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">疾病住院日額（元/日）</div>
             <input type="number" id="wm-ward" value="0" step="500" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">實支雜費限額（萬）</div>
             <input type="number" id="wm-misc" value="0" step="5" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">實支手術費（萬）</div>
             <input type="number" id="wm-surgery" value="0" step="5" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">失能月給付（萬/月）</div>
             <input type="number" id="wm-dismon" value="0" step="0.5" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">失能一次金（萬）</div>
             <input type="number" id="wm-disone" value="0" step="10" oninput="applyManualHave()"
-              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+              style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
         </div>
         <button onclick="clearManualHave()"
@@ -1948,408 +1925,238 @@ function renderWantPanel() {
           清除全部 → 全從零開始討論
         </button>
       </div>
+
       <div style="padding:0 20px 20px">
+
+      <!-- ══════════════════════════════════════════
+           四金問卷（與保戶版相同欄位 ID 和計算邏輯）
+           ══════════════════════════════════════════ -->
 
       <!-- ═══ 退休金 ═══ -->
       <div class="gold-card crd-retire" style="margin-top:16px">
-        <div class="gold-hdr" onclick="wToggle('w-retire')">
-          <div class="gold-hdr-left">
-            <div class="gold-ico">🏖</div>
-            <div><div class="gold-ttl">退休金</div><div class="gold-sbl">退休所需 × 年數 − 已準備資源</div></div>
-          </div>
-          <div class="gold-tog-wrap">
+        <div class="gold-hdr" onclick="wToggle('retire')">
+          <div class="gold-ico">🏖</div>
+          <div><div class="gold-ttl">退休金規劃</div><div class="gold-sbl">退休後每月需要多少生活費？</div></div>
+          <div class="gold-tog-wrap" style="margin-left:auto">
             <div class="plan-tog on" id="wpt-retire" onclick="wTogglePlan('retire',event)">📋 納入規劃</div>
             <button class="chev-btn open" id="wcv-retire">▲</button>
           </div>
         </div>
         <div class="gold-bdy open" id="wbody-retire">
-          <div class="wfg-grid">
-            <div class="wfg"><label>目前年齡</label><div class="wu"><input class="winp" type="number" id="wr-age" value="35" step="1" oninput="wantCalc()"><span class="wunit">歲</span></div></div>
-            <div class="wfg"><label>預計退休年齡</label><div class="wu"><input class="winp" type="number" id="wr-retire" value="65" step="1" oninput="wantCalc()"><span class="wunit">歲</span></div></div>
-            <div class="wfg"><label>預估壽命 <em>(Want)</em></label>
-              <select class="wsel" id="wrl-sel" onchange="wHandleCustom('wrl-sel','wrl-inp');wantCalc()">
+          <div class="wfg-grid" style="margin-top:14px">
+            <div class="wfg"><label>目前年齡</label><div class="wu"><input class="winp" type="number" id="p-age" value="35" step="1" oninput="wCalc()"><span class="wunit">歲</span></div></div>
+            <div class="wfg"><label>預計退休年齡</label><div class="wu"><input class="winp" type="number" id="r-ret" value="65" step="1" oninput="wCalc()"><span class="wunit">歲</span></div></div>
+            <div class="wfg"><label>預估活到幾歲 <em>(Want)</em></label>
+              <select class="wsel" id="r-life" onchange="wCalc()">
                 <option value="80">80歲</option><option value="85" selected>85歲</option>
                 <option value="90">90歲</option><option value="95">95歲</option>
-                <option value="custom">自訂輸入…</option>
               </select>
-              <div class="wcustom" id="wci-wrl"><div class="wu"><input class="winp" type="number" id="wrl-inp" placeholder="歲" step="1" min="60" max="120" oninput="wantCalc()"><span class="wunit">歲</span></div></div>
             </div>
             <div class="wfg"><label>退休所得替代率 <em>(Want)</em></label>
-              <select class="wsel" id="wrr-sel" onchange="wHandleCustom('wrr-sel','wrr-inp');wantCalc()">
+              <select class="wsel" id="r-rep" onchange="wCalc()">
                 <option value="0.8">寬裕(80%)</option><option value="0.7" selected>稍省(70%)</option>
                 <option value="0.6">節省(60%)</option><option value="0.5">最低(50%)</option>
-                <option value="custom">自訂輸入…</option>
               </select>
-              <div class="wcustom" id="wci-wrr"><div class="wu"><input class="winp" type="number" id="wrr-inp" placeholder="%" step="1" min="1" max="100" oninput="wantCalc()"><span class="wunit">%</span></div></div>
             </div>
-            <div class="wfg"><label>目前月薪（稅前）</label><div class="wu"><input class="winp" type="number" id="wr-sal" value="5" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            <div class="wfg"><label>勞保年金（月領）</label><div class="wu"><input class="winp" type="number" id="wr-labor" value="2" step="0.1" oninput="wantCalc()"><span class="wunit">萬/月</span></div></div>
-            <div class="wfg"><label>已準備退休金</label><div class="wu"><input class="winp" type="number" id="wr-saved" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            <div class="wfg"><label>保險生存金（年領，已帶入）</label><div class="wu"><input class="winp" type="number" id="wr-surv" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬/年</span></div></div>
+            <div class="wfg"><label>目前月薪（稅前）</label><div class="wu"><input class="winp" type="number" id="p-salary" value="5" step="0.5" oninput="wCalc()"><span class="wunit">萬</span></div></div>
+            <div class="wfg"><label>勞保年金（月領）</label><div class="wu"><input class="winp" type="number" id="r-labor" value="2" step="0.5" oninput="wCalc()"><span class="wunit">萬/月</span></div></div>
+            <div class="wfg"><label>已準備退休金</label><div class="wu"><input class="winp" type="number" id="r-saved" value="0" step="10" oninput="wCalc()"><span class="wunit">萬</span></div></div>
+            <div class="wfg"><label>保險生存金（年領）</label><div class="wu"><input class="winp" type="number" id="r-surv" value="0" step="1" oninput="wCalc()"><span class="wunit">萬/年</span></div></div>
           </div>
-          <div class="wcalc"><h4>退休金試算</h4>
-            <div class="wcr"><span class="wlbl">退休後年數</span><span class="wval" id="wr-yrs">—</span></div>
-            <div class="wcr"><span class="wlbl">每月需求（月薪×替代率）</span><span class="wval" id="wr-mon">—</span></div>
-            <div class="wcr"><span class="wlbl">退休總需求</span><span class="wval" id="wr-tot">—</span></div>
+          <div class="wcalc" style="margin-top:12px"><h4>退休金試算</h4>
+            <div class="wcr"><span class="wlbl">退休後年數</span><span class="wval" id="rs-yrs">—</span></div>
+            <div class="wcr"><span class="wlbl">每月需求</span><span class="wval" id="rs-mon">—</span></div>
+            <div class="wcr"><span class="wlbl">退休總需求</span><span class="wval" id="rs-tot">—</span></div>
             <div class="wsep"></div>
-            <div class="wcr"><span class="wmn">− 已準備</span><span class="wval" id="wr-sv">—</span></div>
-            <div class="wcr"><span class="wmn">− 勞保年金總計</span><span class="wval" id="wr-lab">—</span></div>
-            <div class="wcr"><span class="wmn">− 生存金總計</span><span class="wval" id="wr-surv2">—</span></div>
-            <div class="wcr wtot"><span>退休金缺口</span><span class="wval" id="wr-gap">—</span></div>
+            <div class="wcr"><span class="wmn">− 已準備 + 勞保 + 生存金</span><span class="wval" id="rs-hav">—</span></div>
+            <div class="wcr wtot"><span>退休金缺口</span><span class="wval" id="rs-gap">—</span></div>
           </div>
-          <div class="wgap red" id="wrg-box"><span class="wgl" id="wrg-lbl">退休金缺口</span><span class="wgv" id="wrg-val">—<span class="wgu">萬</span></span></div>
-          <div class="wntc wntc-a">勞保年金為估算值，實際依個人年資計算。</div>
+          <div class="wgap red" id="rg-box"><span class="wgl" id="rg-lbl">退休金缺口</span><span class="wgv" id="rg-val">—<span class="wgu">萬</span></span></div>
+          <div class="wntc wntc-a">勞保年金為估算值，實際依年資計算。</div>
         </div>
       </div>
 
       <!-- ═══ 醫療金 ═══ -->
       <div class="gold-card crd-medical">
-        <div class="gold-hdr" onclick="wToggle('w-medical')">
-          <div class="gold-hdr-left">
-            <div class="gold-ico">🏥</div>
-            <div><div class="gold-ttl">醫療金</div><div class="gold-sbl">疾病住院＋意外＋癌症</div></div>
-          </div>
-          <div class="gold-tog-wrap">
+        <div class="gold-hdr" onclick="wToggle('medical')">
+          <div class="gold-ico">🏥</div>
+          <div><div class="gold-ttl">醫療金規劃</div><div class="gold-sbl">疾病住院 + 意外 + 癌症治療</div></div>
+          <div class="gold-tog-wrap" style="margin-left:auto">
             <div class="plan-tog on" id="wpt-medical" onclick="wTogglePlan('medical',event)">📋 納入規劃</div>
             <button class="chev-btn open" id="wcv-medical">▲</button>
           </div>
         </div>
         <div class="gold-bdy open" id="wbody-medical">
-
-          <!-- ══ 醫療三階段 Have 現況 ══ -->
-          <div style="margin-top:14px;margin-bottom:16px">
-
-            <!-- 三箭頭標題列 -->
-            <div style="display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;gap:0;align-items:center;margin-bottom:14px">
-
-              <!-- 醫療前 -->
-              <div style="background:#1a1a7e;border-radius:6px 0 0 6px;padding:7px 10px;position:relative">
-                <div style="font-size:12px;font-weight:600;color:#fff;letter-spacing:1px;margin-bottom:2px">醫 療 前</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.7)">拿回治療主動權</div>
-                <!-- 箭頭尾巴 -->
-                <div style="position:absolute;right:-12px;top:0;width:0;height:100%;border-top:19px solid transparent;border-bottom:19px solid transparent;border-left:12px solid #1a1a7e;z-index:1"></div>
+          <!-- 醫療三階段 -->
+          <div style="margin-top:14px;margin-bottom:12px">
+            <div style="display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;gap:0;align-items:center;margin-bottom:12px">
+              <div style="background:#1a1a7e;border-radius:6px 0 0 6px;padding:6px 8px;position:relative">
+                <div style="font-size:11px;font-weight:600;color:#fff;letter-spacing:1px">醫 療 前</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.7)">拿回主動權</div>
+                <div style="position:absolute;right:-10px;top:0;width:0;height:100%;border-top:17px solid transparent;border-bottom:17px solid transparent;border-left:10px solid #1a1a7e;z-index:1"></div>
               </div>
-              <div style="width:24px"></div>
-
-              <!-- 醫療中 -->
-              <div style="background:#0d5b8e;border-radius:0;padding:7px 10px 7px 16px;position:relative">
-                <!-- 左缺口 -->
-                <div style="position:absolute;left:0;top:0;width:0;height:100%;border-top:19px solid transparent;border-bottom:19px solid transparent;border-left:12px solid var(--color-background-primary)"></div>
-                <div style="font-size:12px;font-weight:600;color:#fff;letter-spacing:1px;margin-bottom:2px">醫 療 中</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.7)">確保醫療品質</div>
-                <!-- 箭頭尾巴 -->
-                <div style="position:absolute;right:-12px;top:0;width:0;height:100%;border-top:19px solid transparent;border-bottom:19px solid transparent;border-left:12px solid #0d5b8e;z-index:1"></div>
+              <div style="width:20px"></div>
+              <div style="background:#0d5b8e;padding:6px 8px 6px 14px;position:relative">
+                <div style="position:absolute;left:0;top:0;width:0;height:100%;border-top:17px solid transparent;border-bottom:17px solid transparent;border-left:10px solid var(--surface)"></div>
+                <div style="font-size:11px;font-weight:600;color:#fff;letter-spacing:1px">醫 療 中</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.7)">確保品質</div>
+                <div style="position:absolute;right:-10px;top:0;width:0;height:100%;border-top:17px solid transparent;border-bottom:17px solid transparent;border-left:10px solid #0d5b8e;z-index:1"></div>
               </div>
-              <div style="width:24px"></div>
-
-              <!-- 醫療後 -->
-              <div style="background:#1060a0;border-radius:0 6px 6px 0;padding:7px 10px 7px 16px;position:relative">
-                <div style="position:absolute;left:0;top:0;width:0;height:100%;border-top:19px solid transparent;border-bottom:19px solid transparent;border-left:12px solid var(--color-background-primary)"></div>
-                <div style="font-size:12px;font-weight:600;color:#fff;letter-spacing:1px;margin-bottom:2px">醫 療 後</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.7)">守護經濟尊嚴</div>
+              <div style="width:20px"></div>
+              <div style="background:#1060a0;border-radius:0 6px 6px 0;padding:6px 8px 6px 14px;position:relative">
+                <div style="position:absolute;left:0;top:0;width:0;height:100%;border-top:17px solid transparent;border-bottom:17px solid transparent;border-left:10px solid var(--surface)"></div>
+                <div style="font-size:11px;font-weight:600;color:#fff;letter-spacing:1px">醫 療 後</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.7)">守護尊嚴</div>
               </div>
             </div>
-
-            <!-- 三階段 Have 項目 + Want 輸入 -->
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-
-              <!-- 醫療前 -->
-              <div style="background:#eff1fc;border:1px solid #c7d2f8;border-radius:10px;padding:12px">
-                <div style="font-size:10px;font-weight:600;color:#1a1a7e;letter-spacing:.5px;margin-bottom:8px">現有保障 (Have)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div style="background:#eff1fc;border:1px solid #c7d2f8;border-radius:8px;padding:10px">
+                <div style="font-size:10px;font-weight:600;color:#1a1a7e;margin-bottom:6px">Have</div>
                 <div style="font-size:11px;color:#3a3a8c;line-height:2">
-                  <div style="display:flex;justify-content:space-between">
-                    <span>健保底層</span><span style="font-weight:500">✅</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>重大傷病</span><span style="font-weight:500;color:#0d5b8e" id="wph-ci">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>癌症一次金</span><span style="font-weight:500;color:#0d5b8e" id="wph-cancer">—</span>
-                  </div>
+                  <div style="display:flex;justify-content:space-between"><span>重大傷病</span><span id="wph-ci">—</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>癌症一次金</span><span id="wph-cancer">—</span></div>
                 </div>
-                <div style="margin-top:10px;border-top:1px solid #c7d2f8;padding-top:8px">
-                  <div style="font-size:10px;font-weight:600;color:#1a1a7e;margin-bottom:5px">Want 目標</div>
-                  <div style="font-size:11px;color:#3a3a8c;margin-bottom:4px">一次金目標</div>
-                  <div style="position:relative">
-                    <input type="number" id="wph-ci-want" value="100" step="10" oninput="wantCalc()"
-                      style="width:100%;padding:5px 30px 5px 8px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:var(--font-mono);font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
-                  </div>
+                <div style="border-top:1px solid #c7d2f8;margin-top:8px;padding-top:8px">
+                  <div style="font-size:10px;color:#1a1a7e;margin-bottom:4px">Want：一次金目標</div>
+                  <div style="position:relative"><input type="number" id="m-oncetime-want" value="100" step="10" oninput="wCalc()"
+                    style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                  <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span></div>
                 </div>
               </div>
-
-              <!-- 醫療中 -->
-              <div style="background:#e8f3fb;border:1px solid #b3d4ef;border-radius:10px;padding:12px">
-                <div style="font-size:10px;font-weight:600;color:#0d5b8e;letter-spacing:.5px;margin-bottom:8px">現有保障 (Have)</div>
+              <div style="background:#e8f3fb;border:1px solid #b3d4ef;border-radius:8px;padding:10px">
+                <div style="font-size:10px;font-weight:600;color:#0d5b8e;margin-bottom:6px">Have</div>
                 <div style="font-size:11px;color:#0c4a7a;line-height:2">
-                  <div style="display:flex;justify-content:space-between">
-                    <span>疾病日額</span><span style="font-weight:500;color:#0d5b8e" id="wpm-ward">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>意外日額</span><span style="font-weight:500;color:#0d5b8e" id="wpm-accw">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>實支雜費</span><span style="font-weight:500;color:#0d5b8e" id="wpm-misc">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>實支手術</span><span style="font-weight:500;color:#0d5b8e" id="wpm-surg">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>癌症住院日額</span><span style="font-weight:500;color:#0d5b8e" id="wpm-cward">—</span>
-                  </div>
+                  <div style="display:flex;justify-content:space-between"><span>住院日額</span><span id="wpm-ward">—</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>實支雜費</span><span id="wpm-misc">—</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>實支手術</span><span id="wpm-surg">—</span></div>
                 </div>
-                <div style="margin-top:10px;border-top:1px solid #b3d4ef;padding-top:8px">
-                  <div style="font-size:10px;font-weight:600;color:#0d5b8e;margin-bottom:5px">Want 目標</div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-                    <div>
-                      <div style="font-size:10px;color:#3a7aaa;margin-bottom:3px">目標病房差額</div>
-                      <div style="position:relative">
-                        <input type="number" id="wpm-room-want" value="1500" step="500" oninput="wantCalc()"
-                          style="width:100%;padding:4px 24px 4px 6px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:var(--font-mono);font-size:11px;outline:none;background:#fff">
-                        <span style="position:absolute;right:5px;top:50%;transform:translateY(-50%);font-size:9px;color:#888;pointer-events:none">元/日</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div style="font-size:10px;color:#3a7aaa;margin-bottom:3px">雜費目標</div>
-                      <div style="position:relative">
-                        <input type="number" id="wpm-misc-want" value="30" step="5" oninput="wantCalc()"
-                          style="width:100%;padding:4px 24px 4px 6px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:var(--font-mono);font-size:11px;outline:none;background:#fff">
-                        <span style="position:absolute;right:5px;top:50%;transform:translateY(-50%);font-size:9px;color:#888;pointer-events:none">萬</span>
-                      </div>
-                    </div>
-                  </div>
+                <div style="border-top:1px solid #b3d4ef;margin-top:8px;padding-top:8px">
+                  <div style="font-size:10px;color:#0d5b8e;margin-bottom:4px">Want：目標病房差額</div>
+                  <div style="position:relative"><input type="number" id="m-room" value="1500" step="500" oninput="wCalc()"
+                    style="width:100%;padding:4px 36px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                  <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">元/日</span></div>
+                  <div style="font-size:10px;color:#0d5b8e;margin-top:5px;margin-bottom:4px">Want：雜費目標</div>
+                  <div style="position:relative"><input type="number" id="m-misc" value="30" step="5" oninput="wCalc()"
+                    style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                  <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span></div>
                 </div>
               </div>
-
-              <!-- 醫療後 -->
-              <div style="background:#e6f0fa;border:1px solid #a8c8e8;border-radius:10px;padding:12px">
-                <div style="font-size:10px;font-weight:600;color:#1060a0;letter-spacing:.5px;margin-bottom:8px">現有保障 (Have)</div>
+              <div style="background:#e6f0fa;border:1px solid #a8c8e8;border-radius:8px;padding:10px">
+                <div style="font-size:10px;font-weight:600;color:#1060a0;margin-bottom:6px">Have</div>
                 <div style="font-size:11px;color:#0c4e8a;line-height:2">
-                  <div style="display:flex;justify-content:space-between">
-                    <span>失能一次金</span><span style="font-weight:500;color:#1060a0" id="wpa-disone">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>失能月給付</span><span style="font-weight:500;color:#1060a0" id="wpa-dismon">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>長照月給付</span><span style="font-weight:500;color:#1060a0" id="wpa-ltc">—</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between">
-                    <span>骨折保障</span><span style="font-weight:500;color:#1060a0" id="wpa-frac">—</span>
-                  </div>
+                  <div style="display:flex;justify-content:space-between"><span>失能月給付</span><span id="wpa-dismon">—</span></div>
+                  <div style="display:flex;justify-content:space-between"><span>失能一次金</span><span id="wpa-disone">—</span></div>
                 </div>
-                <div style="margin-top:10px;border-top:1px solid #a8c8e8;padding-top:8px">
-                  <div style="font-size:10px;font-weight:600;color:#1060a0;margin-bottom:5px">Want 目標</div>
-                  <div style="font-size:10px;color:#3a7aaa;margin-bottom:3px">月給付目標</div>
-                  <div style="position:relative">
-                    <input type="number" id="wpa-mon-want" value="3" step="0.5" oninput="wantCalc()"
-                      style="width:100%;padding:5px 36px 5px 8px;border:1.5px solid #a8c8e8;border-radius:6px;font-family:var(--font-mono);font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬/月</span>
-                  </div>
+                <div style="border-top:1px solid #a8c8e8;margin-top:8px;padding-top:8px">
+                  <div style="font-size:10px;color:#1060a0;margin-bottom:4px">Want：月給付目標</div>
+                  <div style="position:relative"><input type="number" id="m-aftermon-want" value="3" step="0.5" oninput="wCalc()"
+                    style="width:100%;padding:4px 36px 4px 7px;border:1.5px solid #a8c8e8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                  <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬/月</span></div>
                 </div>
               </div>
-
-            </div><!-- /三格 -->
-
-            <!-- 醫療前中後 業務員提示 -->
-            <div style="margin-top:10px;background:#f0f4ff;border-left:3px solid #1a1a7e;border-radius:0 6px 6px 0;padding:8px 12px;font-size:11px;color:#3a3a8c;line-height:1.7">
-              💼 業務員提示：上方 Have 數據由保單自動帶入，Want 欄位協助評估目標，缺口部分由業務員依客戶狀況進行專業說明。
             </div>
-          </div>
-          <!-- ══ 以下維持原有實支實付詳細計算 ══ -->
-          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px;padding:6px 10px;background:var(--color-background-secondary);border-radius:6px">
-            以下為詳細 Want 問卷（業務員進階使用）
-          </div>
-
-          <div class="wsec" style="color:var(--medical)">🏨 住院實支實付</div>
-          <div class="wfg-grid">
-            <div class="wfg"><label>目標病房等級 <em>(Want)</em></label>
-              <select class="wsel" id="wmr-sel" onchange="wHandleCustom('wmr-sel','wmr-inp');wantCalc()">
-                <option value="0">健保病房(0元差額)</option><option value="1500" selected>單人房(≈1,500/日)</option>
-                <option value="3000">套房(≈3,000/日)</option><option value="5000">VIP套房(≈5,000/日)</option>
-                <option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wmr"><div class="wu"><input class="winp" type="number" id="wmr-inp" placeholder="元/日" step="100" oninput="wantCalc()"><span class="wunit">元/日</span></div></div>
-            </div>
-            <div class="wfg"><label>雜費目標額度 <em>(Want)</em></label>
-              <select class="wsel" id="wmm-sel" onchange="wHandleCustom('wmm-sel','wmm-inp');wantCalc()">
-                <option value="20">20萬(基本)</option><option value="30" selected>30萬(一般)</option>
-                <option value="50">50萬(充裕)</option><option value="80">80萬(高額)</option>
-                <option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wmm"><div class="wu"><input class="winp" type="number" id="wmm-inp" placeholder="萬" step="1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            </div>
-            <div class="wfg"><label>手術費目標額度 <em>(Want)</em></label>
-              <select class="wsel" id="wms-sel" onchange="wHandleCustom('wms-sel','wms-inp');wantCalc()">
-                <option value="20">20萬(基本)</option><option value="35" selected>35萬(含重大)</option>
-                <option value="50">50萬(充裕)</option><option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wms"><div class="wu"><input class="winp" type="number" id="wms-inp" placeholder="萬" step="1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            </div>
-            <div class="wfg"><label>意外實支限額目標 <em>(Want)</em></label>
-              <select class="wsel" id="wma-sel" onchange="wHandleCustom('wma-sel','wma-inp');wantCalc()">
-                <option value="5">5萬</option><option value="10" selected>10萬</option>
-                <option value="20">20萬</option><option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wma"><div class="wu"><input class="winp" type="number" id="wma-inp" placeholder="萬" step="1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            </div>
-          </div>
-          <div class="wsec" style="color:#f59e0b;margin-top:10px">🎗 癌症醫療</div>
-          <div class="wfg-grid">
-            <div class="wfg"><label>癌症住院日額目標 <em>(Want)</em></label>
-              <select class="wsel" id="wmc-sel" onchange="wHandleCustom('wmc-sel','wmc-inp');wantCalc()">
-                <option value="2000">2,000元/日</option><option value="3000" selected>3,000元/日</option>
-                <option value="5000">5,000元/日</option><option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wmc"><div class="wu"><input class="winp" type="number" id="wmc-inp" placeholder="元/日" step="500" oninput="wantCalc()"><span class="wunit">元/日</span></div></div>
-            </div>
-            <div class="wfg"><label>癌症一次金目標 <em>(Want)</em></label>
-              <select class="wsel" id="wmco-sel" onchange="wHandleCustom('wmco-sel','wmco-inp');wantCalc()">
-                <option value="50">50萬(基本)</option><option value="100" selected>100萬(建議)</option>
-                <option value="200">200萬(充裕)</option><option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wmco"><div class="wu"><input class="winp" type="number" id="wmco-inp" placeholder="萬" step="10" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
+            <div style="margin-top:8px;background:#f0f4ff;border-left:3px solid #1a1a7e;border-radius:0 6px 6px 0;padding:7px 12px;font-size:11px;color:#3a3a8c">
+              💼 業務員提示：上方 Have 數據由保單自動帶入，缺口部分由業務員依客戶狀況說明。
             </div>
           </div>
           <div class="wcalc"><h4>醫療金缺口</h4>
-            <div class="wcr"><span class="wlbl">病房費差額(每日)</span><span class="wval" id="wm-room">—</span></div>
-            <div class="wcr"><span class="wlbl">雜費缺口</span><span class="wval" id="wm-misc">—</span></div>
-            <div class="wcr"><span class="wlbl">手術費缺口</span><span class="wval" id="wm-surg">—</span></div>
-            <div class="wcr"><span class="wlbl">癌症一次金缺口</span><span class="wval" id="wm-cancer">—</span></div>
-            <div class="wcr"><span class="wlbl">意外實支缺口</span><span class="wval" id="wm-acc">—</span></div>
-            <div class="wcr wtot"><span>醫療金缺口總計</span><span class="wval" id="wm-tot">—</span></div>
+            <div class="wcr"><span class="wlbl">病房費差額（每日）</span><span class="wval" id="ms-room">—</span></div>
+            <div class="wcr"><span class="wlbl">一次金缺口（重疾+癌症）</span><span class="wval" id="ms-once">—</span></div>
+            <div class="wcr"><span class="wlbl">雜費缺口</span><span class="wval" id="ms-misc">—</span></div>
+            <div class="wcr wtot"><span>醫療金缺口總計</span><span class="wval" id="ms-tot">—</span></div>
           </div>
-          <div class="wgap red" id="wmg-box"><span class="wgl" id="wmg-lbl">醫療金缺口</span><span class="wgv" id="wmg-val">—<span class="wgu">萬</span></span></div>
-          <div class="wntc wntc-b">病房費差額為每日費用；癌症一次金為單次給付缺口。</div>
+          <div class="wgap red" id="mg-box"><span class="wgl" id="mg-lbl">醫療金缺口</span><span class="wgv" id="mg-val">—<span class="wgu">萬</span></span></div>
+          <div class="wntc wntc-b">病房費差額每日顯示；癌症一次金為單次給付缺口。</div>
         </div>
       </div>
 
       <!-- ═══ 長照金 ═══ -->
       <div class="gold-card crd-ltc">
-        <div class="gold-hdr" onclick="wToggle('w-ltc')">
-          <div class="gold-hdr-left">
-            <div class="gold-ico">💪</div>
-            <div><div class="gold-ttl">長照金</div><div class="gold-sbl">重大傷病一次金＋長期照護月給付</div></div>
-          </div>
-          <div class="gold-tog-wrap">
+        <div class="gold-hdr" onclick="wToggle('ltc')">
+          <div class="gold-ico">💪</div>
+          <div><div class="gold-ttl">長照金規劃</div><div class="gold-sbl">重大傷病一次金 + 長期照護月給付</div></div>
+          <div class="gold-tog-wrap" style="margin-left:auto">
             <div class="plan-tog on" id="wpt-ltc" onclick="wTogglePlan('ltc',event)">📋 納入規劃</div>
             <button class="chev-btn open" id="wcv-ltc">▲</button>
           </div>
         </div>
         <div class="gold-bdy open" id="wbody-ltc">
-          <div class="wsec" style="color:var(--ltc)">⚡ 重大傷病一次金</div>
-          <div class="wfg-grid">
-            <div class="wfg"><label>重大傷病一次金目標 <em>(Want)</em></label>
-              <select class="wsel" id="wlci-sel" onchange="wHandleCustom('wlci-sel','wlci-inp');wantCalc()">
-                <option value="50">50萬(基本)</option><option value="100" selected>100萬(建議)</option>
-                <option value="200">200萬(充裕)</option><option value="300">300萬(高額)</option>
-                <option value="custom">自訂輸入…</option>
-              </select>
-              <div class="wcustom" id="wci-wlci"><div class="wu"><input class="winp" type="number" id="wlci-inp" placeholder="萬" step="10" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            </div>
-            <div class="wfg"><label>已有重大傷病＋癌症一次金（已帶入）</label><div class="wu"><input class="winp" type="number" id="wl-cih" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-          </div>
-          <div class="wsec" style="color:var(--ltc);margin-top:10px">👴 長期照護</div>
-          <div class="wfg-grid">
-            <div class="wfg"><label>長照方式 <em>(Want)</em></label>
-              <select class="wsel" id="wlc-sel" onchange="wHandleCustom('wlc-sel','wlc-inp');wantCalc()">
+          <div class="wfg-grid" style="margin-top:14px">
+            <div class="wfg"><label>照護方式 <em>(Want)</em></label>
+              <select class="wsel" id="l-care" onchange="wCalc()">
                 <option value="1.5">居家照護(≈1.5萬/月)</option><option value="3.0" selected>外籍看護(≈3.0萬/月)</option>
                 <option value="4.5">本國看護(≈4.5萬/月)</option><option value="6.0">安養機構(≈6.0萬/月)</option>
-                <option value="custom">自訂輸入…</option>
               </select>
-              <div class="wcustom" id="wci-wlc"><div class="wu"><input class="winp" type="number" id="wlc-inp" placeholder="萬/月" step="0.5" oninput="wantCalc()"><span class="wunit">萬/月</span></div></div>
             </div>
             <div class="wfg"><label>預估照護年數 <em>(Want)</em></label>
-              <select class="wsel" id="wly-sel" onchange="wHandleCustom('wly-sel','wly-inp');wantCalc()">
+              <select class="wsel" id="l-yrs" onchange="wCalc()">
                 <option value="5">5年</option><option value="7" selected>7年</option>
                 <option value="10">10年</option><option value="15">15年</option>
-                <option value="custom">自訂輸入…</option>
               </select>
-              <div class="wcustom" id="wci-wly"><div class="wu"><input class="winp" type="number" id="wly-inp" placeholder="年" step="1" oninput="wantCalc()"><span class="wunit">年</span></div></div>
             </div>
-            <div class="wfg"><label>現有失能月給付（已帶入）</label><div class="wu"><input class="winp" type="number" id="wl-dm" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬/月</span></div></div>
-            <div class="wfg"><label>現有失能一次金（已帶入）</label><div class="wu"><input class="winp" type="number" id="wl-do" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
           </div>
-          <div class="wcalc"><h4>長照金試算</h4>
-            <div class="wcr"><span class="wlbl">重大傷病需求</span><span class="wval" id="wl-cin">—</span></div>
-            <div class="wcr"><span class="wmn">− 現有重大傷病/癌症</span><span class="wval" id="wl-cih2">—</span></div>
-            <div class="wcr"><span class="wlbl">長照月費需求</span><span class="wval" id="wl-mn">—</span></div>
-            <div class="wcr"><span class="wlbl">長照總需求(月費×年×12)</span><span class="wval" id="wl-tn">—</span></div>
-            <div class="wcr"><span class="wmn">− 現有失能給付總計</span><span class="wval" id="wl-hv">—</span></div>
-            <div class="wcr wtot"><span>長照金缺口</span><span class="wval" id="wl-gap">—</span></div>
+          <div class="wcalc" style="margin-top:12px"><h4>長照金試算</h4>
+            <div class="wcr"><span class="wlbl">長照月費需求</span><span class="wval" id="ls-mon">—</span></div>
+            <div class="wcr"><span class="wlbl">長照總需求（月費×年×12）</span><span class="wval" id="ls-tot">—</span></div>
+            <div class="wcr"><span class="wmn">− 現有失能月給付總計</span><span class="wval" id="ls-hav">—</span></div>
+            <div class="wcr wtot"><span>長照金缺口</span><span class="wval" id="ls-gap">—</span></div>
           </div>
-          <div class="wgap red" id="wlg-box"><span class="wgl" id="wlg-lbl">長照金缺口</span><span class="wgv" id="wlg-val">—<span class="wgu">萬</span></span></div>
-          <div class="wntc wntc-r">意外險失能保額不等同長照保障——疾病造成的失能（中風、失智）不在意外險範圍，長照缺口仍存在。</div>
+          <div class="wgap red" id="lg-box"><span class="wgl" id="lg-lbl">長照金缺口</span><span class="wgv" id="lg-val">—<span class="wgu">萬</span></span></div>
+          <div class="wntc wntc-r">意外險失能不等同長照——疾病（中風、失智）造成的失能不在意外險範圍。</div>
         </div>
       </div>
 
       <!-- ═══ 家庭責任金 ═══ -->
       <div class="gold-card crd-family">
-        <div class="gold-hdr" onclick="wToggle('w-family')">
-          <div class="gold-hdr-left">
-            <div class="gold-ico">🏠</div>
-            <div><div class="gold-ttl">家庭責任金</div><div class="gold-sbl">身故後家人所需 — 以壽險規劃</div></div>
-          </div>
-          <div class="gold-tog-wrap">
+        <div class="gold-hdr" onclick="wToggle('family')">
+          <div class="gold-ico">🏠</div>
+          <div><div class="gold-ttl">家庭責任金</div><div class="gold-sbl">身故後家人所需 — 以壽險規劃</div></div>
+          <div class="gold-tog-wrap" style="margin-left:auto">
             <div class="plan-tog on" id="wpt-family" onclick="wTogglePlan('family',event)">📋 納入規劃</div>
             <button class="chev-btn open" id="wcv-family">▲</button>
           </div>
         </div>
         <div class="gold-bdy open" id="wbody-family">
-          <div class="wsec" style="color:#dc2626">💳 負債項目</div>
-          <div class="wfg-grid one">
-            <div class="wfg"><label>借貸餘額（房貸＋車貸＋信貸）</label><div class="wu"><input class="winp" type="number" id="wf-debt" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-          </div>
-          <div class="wsec" style="color:#dc2626;margin-top:10px">👨‍👩‍👧 家庭生活保障</div>
-          <div class="wfg-grid">
-            <div class="wfg"><label>家庭月支出 <em>(Want)</em></label><div class="wu"><input class="winp" type="number" id="wf-mon" value="5" step="0.1" oninput="wantCalc()"><span class="wunit">萬/月</span></div></div>
+          <div class="wfg-grid" style="margin-top:14px">
+            <div class="wfg"><label>家庭月支出 <em>(Want)</em></label><div class="wu"><input class="winp" type="number" id="f-mon" value="5" step="0.5" oninput="wCalc()"><span class="wunit">萬/月</span></div></div>
             <div class="wfg"><label>需保障年數 <em>(Want)</em></label>
-              <select class="wsel" id="wfy-sel" onchange="wantCalc()">
+              <select class="wsel" id="f-yrs" onchange="wCalc()">
                 <option value="5">5年</option><option value="10" selected>10年</option>
-                <option value="15">15年</option><option value="20">20年</option><option value="25">25年</option>
+                <option value="15">15年</option><option value="20">20年</option>
               </select>
             </div>
-          </div>
-          <div class="wsec" style="color:#dc2626;margin-top:10px">🎓 子女教育金</div>
-          <div class="wfg-grid">
             <div class="wfg"><label>子女人數</label>
-              <select class="wsel" id="wfc-sel" onchange="wantCalc()">
+              <select class="wsel" id="f-child" onchange="wCalc()">
                 <option value="0" selected>無子女</option><option value="1">1人</option>
                 <option value="2">2人</option><option value="3">3人以上</option>
               </select>
             </div>
             <div class="wfg"><label>每人教育金目標 <em>(Want)</em></label>
-              <select class="wsel" id="wfe-sel" onchange="wHandleCustom('wfe-sel','wfe-inp');wantCalc()">
-                <option value="100">100萬(國內大學)</option><option value="200">200萬(含研所)</option>
-                <option value="300" selected>300萬(完整規劃)</option><option value="500">500萬(含海外)</option>
-                <option value="custom">自訂輸入…</option>
+              <select class="wsel" id="f-edu" onchange="wCalc()">
+                <option value="100">100萬</option><option value="200">200萬</option>
+                <option value="300" selected>300萬</option><option value="500">500萬</option>
               </select>
-              <div class="wcustom" id="wci-wfe"><div class="wu"><input class="winp" type="number" id="wfe-inp" placeholder="萬" step="10" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
             </div>
           </div>
-          <div class="wsec" style="color:#166534;margin-top:10px">✅ 已準備項目</div>
-          <div class="wfg-grid">
-            <div class="wfg"><label>自行準備金額</label><div class="wu"><input class="winp" type="number" id="wf-self" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
-            <div class="wfg"><label>現有壽險保額（已帶入）</label><div class="wu"><input class="winp" type="number" id="wf-life" value="0" step="0.1" oninput="wantCalc()"><span class="wunit">萬</span></div></div>
+          <div class="wfg-grid one" style="margin-top:10px">
+            <div class="wfg"><label>借貸餘額 <em>（房貸+車貸+信貸）</em></label><div class="wu"><input class="winp" type="number" id="f-debt" value="0" step="10" oninput="wCalc()"><span class="wunit">萬</span></div></div>
           </div>
-          <div class="wntc wntc-r" style="margin-top:8px">意外險保額不列入減項——若因疾病身故，意外險不理賠，家庭責任缺口仍存在。</div>
+          <div class="wntc wntc-r" style="margin-top:10px">意外險保額不列入減項——若因疾病身故，意外險不理賠，家庭責任缺口仍存在。</div>
           <div class="wcalc" style="margin-top:12px"><h4>家庭責任金試算</h4>
-            <div class="wcr"><span class="wlbl">借貸餘額</span><span class="wval" id="wf-ds">—</span></div>
-            <div class="wcr"><span class="wlbl">家庭生活費(月×年×12)</span><span class="wval" id="wf-lc">—</span></div>
-            <div class="wcr"><span class="wlbl">子女教育金(每人×人數)</span><span class="wval" id="wf-es">—</span></div>
-            <div class="wcr"><span class="wlbl">責任總需求</span><span class="wval" id="wf-tn">—</span></div>
-            <div class="wsep"></div>
-            <div class="wcr"><span class="wmn">− 自行準備</span><span class="wval" id="wf-ms">—</span></div>
-            <div class="wcr"><span class="wmn">− 現有壽險</span><span class="wval" id="wf-ml">—</span></div>
-            <div class="wcr wtot"><span>家庭責任金缺口</span><span class="wval" id="wf-gap">—</span></div>
+            <div class="wcr"><span class="wlbl">家庭生活費(月×年×12)</span><span class="wval" id="fs-lc">—</span></div>
+            <div class="wcr"><span class="wlbl">子女教育金</span><span class="wval" id="fs-edu">—</span></div>
+            <div class="wcr"><span class="wlbl">借貸餘額</span><span class="wval" id="fs-debt">—</span></div>
+            <div class="wcr"><span class="wlbl">責任總需求</span><span class="wval" id="fs-tot">—</span></div>
+            <div class="wcr"><span class="wmn">− 現有壽險（已帶入）</span><span class="wval" id="fs-hav">—</span></div>
+            <div class="wcr wtot"><span>家庭責任金缺口</span><span class="wval" id="fs-gap">—</span></div>
           </div>
-          <div class="wgap red" id="wfg-box"><span class="wgl" id="wfg-lbl">家庭責任金缺口</span><span class="wgv" id="wfg-val">—<span class="wgu">萬</span></span></div>
-          <div class="wntc wntc-a" id="wf-emg"></div>
+          <div class="wgap red" id="fg-box"><span class="wgl" id="fg-lbl">家庭責任金缺口</span><span class="wgv" id="fg-val">—<span class="wgu">萬</span></span></div>
+          <div class="wntc wntc-a" id="f-emg-txt"></div>
         </div>
       </div>
 
-      <!-- 總覽 -->
-      <div class="wsum">
+      <!-- 四金總覽 -->
+      <div class="wsum" style="margin-top:14px">
         <h3>📊 四金需求缺口總覽 — <span id="wsum-name">客戶</span></h3>
         <div class="wsum-grid">
           <div class="wsi"><div class="wsl">退休金缺口</div><div class="wsv" id="wsum-r">—萬</div></div>
@@ -2360,10 +2167,8 @@ function renderWantPanel() {
         <div class="wsum-tot"><span class="wtl">四金缺口合計</span><span class="wtv" id="wsum-tot">—萬</span></div>
       </div>
 
-
       </div><!-- /padding -->
     </div><!-- /want-embed -->
-
   </div><!-- /panel-want -->
   `;
 }
@@ -2398,7 +2203,7 @@ function wTogglePlan(id, e) {
   const pt = W('wpt-'+id);
   const on = pt.classList.toggle('on');
   pt.textContent = on ? '📋 納入規劃' : '⏸ 暫不規劃';
-  wantCalc();
+  wCalc();
 }
 function wIsPlan(id){ return (W('wpt-'+id)||{classList:{contains:()=>false}}).classList.contains('on'); }
 function wGapBox(boxId,lblId,valId,gap,name){
@@ -2416,185 +2221,165 @@ function wSumVal(id,val){
 
 // ── syncHave：切換到 want 分頁時從 buildDashboardData 更新 Have ──
 function wantSyncHave() {
-  const db = buildDashboardData();
-  // db 的值單位全部是「元」，萬元欄位需 ÷ 10000，日額欄位直接用元
-  const toWan = v => Math.round((v||0) / 10000 * 10) / 10; // 元→萬，保留1位
+  const db   = buildDashboardData();
+  const toWan = v => Math.round((v||0) / 10000 * 10) / 10;
+  const wFmtL = x => x.toLocaleString('zh-TW', {maximumFractionDigits:1});
+  const setEl = (id, t) => { const e=document.getElementById(id); if(e) e.textContent=t; };
 
-  // 退休金：生存金已是萬/年
-  if(W('wr-surv')) W('wr-surv').value = toWan(db.latestSurvAmt * 10000) || 0; // latestSurvAmt 已是萬
+  // badge 顯示
+  setEl('wh-life',    '壽險 '    + wFmtL(toWan(db.lifeTotal||0))           + ' 萬');
+  setEl('wh-medical', '醫療雜費 ' + wFmtL(toWan(db.miscLimit||0))           + ' 萬');
+  setEl('wh-ltc',     '失能月給 ' + wFmtL(toWan(db.disabilityMonthly||0))   + ' 萬/月');
+  setEl('wh-cancer',  '癌症/重疾 '+ wFmtL(toWan((db.cancerOneTime||0)+(db.ciOneTime||0))) + ' 萬');
 
-  // 長照金：一次金→萬，月給付→萬/月
-  if(W('wl-cih')) W('wl-cih').value = wFmt(toWan((db.ciOneTime||0) + (db.cancerOneTime||0)));
-  if(W('wl-dm'))  W('wl-dm').value  = wFmt(toWan(db.disabilityMonthly||0));
-  if(W('wl-do'))  W('wl-do').value  = wFmt(toWan(db.disabilityOneTime||0));
+  // 姓名同步
+  const ni = document.getElementById('want-name-inp');
+  if(ni && (!ni.value || ni.value === '客戶')) ni.value = db.insuredName || '';
+  const oi = document.getElementById('want-orig-name');
+  if(oi && db.insuredName) oi.textContent = 'PDF 解析：' + db.insuredName;
 
-  // 家庭責任金：壽險→萬
-  if(W('wf-life')) W('wf-life').value = wFmt(toWan(db.lifeTotal||0));
-
-  // Have badge（顯示用，格式化）
-  if(W('wh-life'))    W('wh-life').textContent    = '壽險 ' + wFmt(toWan(db.lifeTotal||0)) + ' 萬';
-  if(W('wh-medical')) W('wh-medical').textContent = '醫療雜費 ' + wFmt(toWan(db.miscLimit||0)) + ' 萬';
-  if(W('wh-ltc'))     W('wh-ltc').textContent     = '失能月給 ' + wFmt(toWan(db.disabilityMonthly||0)) + ' 萬/月';
-  if(W('wh-cancer'))  W('wh-cancer').textContent  = '癌症/重疾 ' + wFmt(toWan((db.cancerOneTime||0)+(db.ciOneTime||0))) + ' 萬';
-
-  // ── 醫療三階段 Have 數值更新 ──
-  const fmt0 = v => v > 0 ? wFmt(v) : '—';
-  const fmtW = v => v > 0 ? wFmt(toWan(v)) + ' 萬' : '—';
-  const fmtE = v => v > 0 ? v.toLocaleString('zh-TW') + ' 元/日' : '—';
-
-  // 醫療前
-  if(W('wph-ci'))     W('wph-ci').textContent     = fmtW(db.ciOneTime||0);
-  if(W('wph-cancer')) W('wph-cancer').textContent = fmtW(db.cancerOneTime||0);
-
-  // 醫療中
-  if(W('wpm-ward'))  W('wpm-ward').textContent  = fmtE(db.dailyWard||0);
-  if(W('wpm-accw'))  W('wpm-accw').textContent  = fmtE(db.accidentWard||0);
-  if(W('wpm-misc'))  W('wpm-misc').textContent  = fmtW(db.miscLimit||0);
-  if(W('wpm-surg'))  W('wpm-surg').textContent  = fmtW(db.surgeryLimit||0);
-  if(W('wpm-cward')) W('wpm-cward').textContent = fmtE(db.cancerWard||0);
-
-  // 醫療後
-  if(W('wpa-disone')) W('wpa-disone').textContent = fmtW(db.disabilityOneTime||0);
-  if(W('wpa-dismon')) W('wpa-dismon').textContent = (db.disabilityMonthly > 0 ? wFmt(toWan(db.disabilityMonthly)) + ' 萬/月' : '—');
-  if(W('wpa-ltc'))    W('wpa-ltc').textContent    = (db.disabilityMonthly > 0 ? wFmt(toWan(db.disabilityMonthly)) + ' 萬/月' : '—');
-  if(W('wpa-frac'))   W('wpa-frac').textContent   = fmtW(db.fractureLimit||0);
-
-  // 姓名同步：帶入 PDF 解析的原始姓名
-  if(W('want-name-inp')) {
-    if(!W('want-name-inp').value || W('want-name-inp').value === '客戶') {
-      W('want-name-inp').value = db.insuredName || '';
-    }
-  }
-  // 顯示 PDF 原始姓名對照
-  const origEl = W('want-orig-name');
-  if(origEl && db.insuredName) origEl.textContent = 'PDF 解析：' + db.insuredName;
-  wantCalc();
+  wCalc();
 }
 
-// ── 主計算 ──
-function wantCalc() {
-  const db = buildDashboardData();
-  // 名稱同步到總覽
-  wSet('wsum-name', (W('want-name-inp')||{}).value || db.insuredName || '客戶');
+// ── wCalc：主工具四金計算（與保戶版相同邏輯）──
+function wCalc() {
+  const db  = buildDashboardData();
+  const toW = v => Math.round((v||0) / 10000 * 10) / 10;
+  const gV  = id => { const e = document.getElementById(id); return e ? (parseFloat(e.value)||0) : 0; };
+  const gS  = id => { const e = document.getElementById(id); return e ? (parseFloat(e.value)||0) : 0; };
+  const fmt = x => (Math.round((x||0)*10)/10).toLocaleString('zh-TW',{maximumFractionDigits:1});
+  const setT = (id, t) => { const e=document.getElementById(id); if(e) e.textContent=t; };
+  const gapBox = (boxId, lblId, valId, gap, name) => {
+    const box=document.getElementById(boxId), lbl=document.getElementById(lblId), val=document.getElementById(valId);
+    if(!box||!lbl||!val) return;
+    const pos = gap > 0;
+    box.className = 'wgap ' + (pos ? 'red' : 'grn');
+    lbl.textContent = name + (pos ? '缺口' : '充足');
+    val.innerHTML = fmt(Math.abs(gap)) + '<span class="wgu">萬</span>';
+  };
+  const sumVal = (id, val) => {
+    const e = document.getElementById(id); if(!e) return;
+    e.textContent = fmt(val) + ' 萬';
+    e.className = 'wsv ' + (val > 0 ? 'r' : 'g');
+  };
+
+  // Have 值（統一從 buildDashboardData 取，手動模式時 override 已套用）
+  const hLife   = toW(db.lifeTotal||0);
+  const hWard   = db.dailyWard || 0;   // 元/日
+  const hMisc   = toW(db.miscLimit||0);
+  const hSurg   = toW(db.surgeryLimit||0);
+  const hCi     = toW(db.ciOneTime||0);
+  const hCancer = toW(db.cancerOneTime||0);
+  const hDisMon = toW(db.disabilityMonthly||0);
+  const hDisOne = toW(db.disabilityOneTime||0);
+
+  // 更新三階段 Have 顯示
+  const fmtW = v => v > 0 ? fmt(v)+' 萬' : '—';
+  const fmtE = v => v > 0 ? v.toLocaleString('zh-TW')+' 元/日' : '—';
+  setT('wph-ci',     fmtW(hCi));
+  setT('wph-cancer', fmtW(hCancer));
+  setT('wpm-ward',   fmtE(hWard));
+  setT('wpm-misc',   fmtW(hMisc));
+  setT('wpm-surg',   fmtW(hSurg));
+  setT('wpa-dismon', hDisMon > 0 ? fmt(hDisMon)+' 萬/月' : '—');
+  setT('wpa-disone', fmtW(hDisOne));
 
   // ── 退休金 ──
   let rGap = 0;
-  if(wIsPlan('retire')){
-    const rAge   = wN('wr-age'), rRet = wN('wr-retire');
-    const rLife  = wSelVal('wrl-sel','wrl-inp');
-    let rRep     = wSelVal('wrr-sel','wrr-inp');
-    if(rRep > 1) rRep /= 100;
-    const rSal   = wN('wr-sal'), rLab = wN('wr-labor');
-    const rSaved = wN('wr-saved'), rSurv = wN('wr-surv');
-    const rYrs   = Math.max(0, rLife - rRet);
-    const rMon   = rSal * rRep;
-    const rTot   = rMon * 12 * rYrs;
-    const rMinL  = rLab * 12 * rYrs;
-    const rMinS  = rSurv * rYrs;
-    rGap = Math.max(0, rTot - rSaved - rMinL - rMinS);
-    wSet('wr-yrs', rYrs+' 年'); wSet('wr-mon', wFmt(rMon)+' 萬/月');
-    wSet('wr-tot', wFmt(rTot)+' 萬'); wSet('wr-sv', wFmt(rSaved)+' 萬');
-    wSet('wr-lab', wFmt(rMinL)+' 萬'); wSet('wr-surv2', wFmt(rMinS)+' 萬');
-    wSet('wr-gap', wFmt(rGap)+' 萬');
-    wGapBox('wrg-box','wrg-lbl','wrg-val', rGap,'退休金');
+  if (wIsPlan('retire')) {
+    const age    = gV('p-age') || 35;
+    const salary = gV('p-salary') || 5;
+    const ret    = gV('r-ret') || 65;
+    const life   = gS('r-life') || 85;
+    const rep    = gS('r-rep') || 0.7;
+    const labor  = gV('r-labor');
+    const saved  = gV('r-saved');
+    const surv   = gV('r-surv');
+    const yrs    = Math.max(0, life - ret);
+    const need   = salary * rep * 12 * yrs;
+    const have   = saved + labor * 12 * yrs + surv * yrs;
+    rGap = Math.max(0, need - have);
+    setT('rs-yrs', yrs + ' 年');
+    setT('rs-mon', fmt(salary*rep) + ' 萬/月');
+    setT('rs-tot', fmt(need) + ' 萬');
+    setT('rs-hav', fmt(have) + ' 萬');
+    setT('rs-gap', fmt(rGap) + ' 萬');
+    gapBox('rg-box','rg-lbl','rg-val', rGap, '退休金');
   }
 
-  // ── 醫療金（含三階段 Want 比對）──
+  // ── 醫療金 ──
   let mGap = 0;
-  if(wIsPlan('medical')){
-    const toW = v => Math.round((v||0) / 10000 * 10) / 10;
-
-    // ── 醫療前：一次金 Want vs Have ──
-    const wPhCiWant = parseFloat((W('wph-ci-want')||{}).value) || 100;
-    const hPhCi     = toW((db.ciOneTime||0) + (db.cancerOneTime||0));
-    const gPhCi     = Math.max(0, wPhCiWant - hPhCi);
-    // 更新醫療前提示顏色
-    const phCiEl = W('wph-ci-want');
-    if(phCiEl) phCiEl.style.borderColor = gPhCi > 0 ? '#ef4444' : '#16a34a';
-
-    // ── 醫療中：病房差額 + 雜費 ──
-    const wPmRoomWant = parseFloat((W('wpm-room-want')||{}).value) || 1500;
-    const wPmMiscWant = parseFloat((W('wpm-misc-want')||{}).value) || 30;
-    const gPmRoom = Math.max(0, wPmRoomWant - (db.dailyWard||0));
-    const gPmMisc = Math.max(0, wPmMiscWant - toW(db.miscLimit||0));
-    const pmRoomEl = W('wpm-room-want');
-    const pmMiscEl = W('wpm-misc-want');
-    if(pmRoomEl) pmRoomEl.style.borderColor = gPmRoom > 0 ? '#ef4444' : '#16a34a';
-    if(pmMiscEl) pmMiscEl.style.borderColor = gPmMisc > 0 ? '#ef4444' : '#16a34a';
-
-    // ── 醫療後：月給付 Want vs Have ──
-    const wPaMonWant = parseFloat((W('wpa-mon-want')||{}).value) || 3;
-    const hPaMon     = toW(db.disabilityMonthly||0);
-    const gPaMon     = Math.max(0, wPaMonWant - hPaMon);
-    const paMonEl = W('wpa-mon-want');
-    if(paMonEl) paMonEl.style.borderColor = gPaMon > 0 ? '#ef4444' : '#16a34a';
-
-    // ── 原有詳細計算維持不變 ──
-    const mRoom = wSelVal('wmr-sel','wmr-inp');
-    const mMisc = wSelVal('wmm-sel','wmm-inp'), mSurg = wSelVal('wms-sel','wms-inp');
-    const mAcc  = wSelVal('wma-sel','wma-inp'), mCancerO = wSelVal('wmco-sel','wmco-inp');
-    const gRoom   = Math.max(0, mRoom - (db.dailyWard||0));
-    const gMisc   = Math.max(0, mMisc - toW(db.miscLimit||0));
-    const gSurg   = Math.max(0, mSurg - toW(db.surgeryLimit||0));
-    const gCancer = Math.max(0, mCancerO - toW(db.cancerOneTime||0));
-    const gAcc    = mAcc;
-    mGap = gMisc + gSurg + gCancer + gAcc + gPhCi;
-    wSet('wm-room',   gRoom>0?`每日差額缺 ${wFmt(gRoom)} 元`:'✅ 已充足');
-    wSet('wm-misc',   (gMisc>0?'缺 ':'✅ 超出 ')+wFmt(Math.abs(gMisc))+' 萬');
-    wSet('wm-surg',   (gSurg>0?'缺 ':'✅ 超出 ')+wFmt(Math.abs(gSurg))+' 萬');
-    wSet('wm-cancer', (gCancer>0?'缺 ':'✅ 超出 ')+wFmt(Math.abs(gCancer))+' 萬');
-    wSet('wm-acc',    gAcc>0?'缺 '+wFmt(gAcc)+' 萬':'✅ 已充足');
-    wSet('wm-tot',    wFmt(mGap)+' 萬');
-    wGapBox('wmg-box','wmg-lbl','wmg-val', mGap,'醫療金');
+  if (wIsPlan('medical')) {
+    const wOnce  = gV('m-oncetime-want') || 100;
+    const wRoom  = gV('m-room') || 1500;
+    const wMisc  = gV('m-misc') || 30;
+    const gRoom  = Math.max(0, wRoom - hWard);
+    const gOnce  = Math.max(0, wOnce - (hCi + hCancer));
+    const gMisc  = Math.max(0, wMisc - hMisc);
+    mGap = gOnce + gMisc;
+    setT('ms-room', gRoom > 0 ? `每日差額缺 ${gRoom.toLocaleString('zh-TW')} 元` : '✅ 已充足');
+    setT('ms-once', (gOnce>0?'缺 ':'✅ 超出 ') + fmt(Math.abs(gOnce)) + ' 萬');
+    setT('ms-misc', (gMisc>0?'缺 ':'✅ 超出 ') + fmt(Math.abs(gMisc)) + ' 萬');
+    setT('ms-tot',  fmt(mGap) + ' 萬');
+    // Want 輸入框顏色提示
+    const roomEl = document.getElementById('m-room'), miscEl = document.getElementById('m-misc');
+    const onceEl = document.getElementById('m-oncetime-want');
+    if(roomEl) roomEl.style.borderColor = gRoom > 0 ? '#ef4444' : '#16a34a';
+    if(miscEl) miscEl.style.borderColor = gMisc > 0 ? '#ef4444' : '#16a34a';
+    if(onceEl) onceEl.style.borderColor = gOnce > 0 ? '#ef4444' : '#16a34a';
+    gapBox('mg-box','mg-lbl','mg-val', mGap, '醫療金');
   }
 
   // ── 長照金 ──
   let lGap = 0;
-  if(wIsPlan('ltc')){
-    const lCiW  = wSelVal('wlci-sel','wlci-inp');
-    const lCiH  = parseFloat(W('wl-cih').value) || 0; // 已是萬單位（wantSyncHave 轉換過）
-    const lCareT= wSelVal('wlc-sel','wlc-inp');
-    const lCareY= wSelVal('wly-sel','wly-inp');
-    const lDM   = wN('wl-dm'), lDO = wN('wl-do');
-    const lCiGap= Math.max(0, lCiW - lCiH);
-    const lTotNd= lCareT * 12 * lCareY;
-    const lHavT = lDM * 12 * lCareY + lDO;
-    lGap = lCiGap + Math.max(0, lTotNd - lHavT);
-    wSet('wl-cin',  wFmt(lCiW)+' 萬'); wSet('wl-cih2', wFmt(lCiH)+' 萬');
-    wSet('wl-mn',   wFmt(lCareT)+' 萬/月'); wSet('wl-tn',  wFmt(lTotNd)+' 萬');
-    wSet('wl-hv',   wFmt(lHavT)+' 萬'); wSet('wl-gap', wFmt(lGap)+' 萬');
-    wGapBox('wlg-box','wlg-lbl','wlg-val', lGap,'長照金');
+  if (wIsPlan('ltc')) {
+    const lCare = gS('l-care') || 3.0;
+    const lYrs  = gS('l-yrs')  || 7;
+    const lNeed = lCare * 12 * lYrs;
+    const lHave = hDisMon * 12 * lYrs + hDisOne;
+    lGap = Math.max(0, lNeed - lHave);
+    setT('ls-mon', fmt(lCare) + ' 萬/月');
+    setT('ls-tot', fmt(lNeed) + ' 萬');
+    setT('ls-hav', fmt(lHave) + ' 萬');
+    setT('ls-gap', fmt(lGap)  + ' 萬');
+    gapBox('lg-box','lg-lbl','lg-val', lGap, '長照金');
   }
 
   // ── 家庭責任金 ──
   let fGap = 0;
-  if(wIsPlan('family')){
-    const fDebt = wN('wf-debt'), fMon = wN('wf-mon');
-    const fYrs  = parseFloat((W('wfy-sel')||{}).value)||10;
-    const fChild= parseFloat((W('wfc-sel')||{}).value)||0;
-    const fEdu  = wSelVal('wfe-sel','wfe-inp');
-    const fSelf = wN('wf-self'), fLife = parseFloat((W('wf-life')||{}).value)||0; // 已是萬
-    const fLC = fMon*12*fYrs, fET = fEdu*fChild;
-    const fTN = fDebt+fLC+fET;
-    fGap = Math.max(0, fTN - fSelf - fLife);
-    wSet('wf-ds', wFmt(fDebt)+' 萬'); wSet('wf-lc', wFmt(fLC)+' 萬');
-    wSet('wf-es', wFmt(fET)+' 萬');   wSet('wf-tn', wFmt(fTN)+' 萬');
-    wSet('wf-ms', wFmt(fSelf)+' 萬'); wSet('wf-ml', wFmt(fLife)+' 萬');
-    wSet('wf-gap', wFmt(fGap)+' 萬');
-    const emg = fMon*6;
-    const emEl = W('wf-emg');
-    if(emEl) emEl.innerHTML = `💡 緊急預備金 = 月支出 ${wFmt(fMon)} 萬 × 6 = <strong>${wFmt(emg)} 萬</strong>（需另外現金準備，保險無法提供）`;
-    wGapBox('wfg-box','wfg-lbl','wfg-val', fGap,'家庭責任金');
+  if (wIsPlan('family')) {
+    const fMon  = gV('f-mon');
+    const fYrs  = gS('f-yrs') || 10;
+    const fChild= gS('f-child');
+    const fEdu  = gS('f-edu') || 300;
+    const fDebt = gV('f-debt');
+    const fLC   = fMon * 12 * fYrs;
+    const fET   = fEdu * fChild;
+    const fTot  = fDebt + fLC + fET;
+    fGap = Math.max(0, fTot - hLife);
+    setT('fs-lc',   fmt(fLC)   + ' 萬');
+    setT('fs-edu',  fmt(fET)   + ' 萬');
+    setT('fs-debt', fmt(fDebt) + ' 萬');
+    setT('fs-tot',  fmt(fTot)  + ' 萬');
+    setT('fs-hav',  fmt(hLife) + ' 萬');
+    setT('fs-gap',  fmt(fGap)  + ' 萬');
+    const emgEl = document.getElementById('f-emg-txt');
+    if(emgEl) emgEl.innerHTML = '💡 緊急預備金 = 月支出 ' + fmt(fMon) + ' 萬 × 6 = <strong>' + fmt(fMon*6) + ' 萬</strong>（需另外現金準備）';
+    gapBox('fg-box','fg-lbl','fg-val', fGap, '家庭責任金');
   }
 
   // ── 總覽 ──
-  const r=wIsPlan('retire')?rGap:0, m=wIsPlan('medical')?mGap:0;
-  const l=wIsPlan('ltc')?lGap:0,   f=wIsPlan('family')?fGap:0;
-  wSumVal('wsum-r', r); wSumVal('wsum-m', m);
-  wSumVal('wsum-l', l); wSumVal('wsum-f', f);
-  const grand = r+m+l+f;
-  const te = W('wsum-tot');
-  if(te){ te.textContent=wFmt(grand)+' 萬'; te.className='wtv '+(grand>0?'':'g'); }
+  const r = wIsPlan('retire') ? rGap : 0;
+  const m = wIsPlan('medical')? mGap : 0;
+  const l = wIsPlan('ltc')    ? lGap : 0;
+  const f = wIsPlan('family') ? fGap : 0;
+  sumVal('wsum-r', r); sumVal('wsum-m', m);
+  sumVal('wsum-l', l); sumVal('wsum-f', f);
+  const grand = r + m + l + f;
+  const te = document.getElementById('wsum-tot');
+  if(te){ te.textContent = fmt(grand) + ' 萬'; te.className = 'wtv' + (grand>0?'':' g'); }
+  const nameEl = document.getElementById('wsum-name');
+  if(nameEl) nameEl.textContent = (document.getElementById('want-name-inp')||{}).value || db.insuredName || '客戶';
 }
 
 // ── captureWantData：儲存時收集所有 want 欄位 ──
@@ -2624,7 +2409,7 @@ function restoreWantData(w) {
   if(w.medical){ setS('wmr-sel',w.medical.roomSelVal,'wmr-inp'); setS('wmm-sel',w.medical.miscSelVal,'wmm-inp'); setS('wms-sel',w.medical.surgSelVal,'wms-inp'); setS('wma-sel',w.medical.accSelVal,'wma-inp'); if(!w.medical.plan){ const pt=W('wpt-medical'); if(pt){pt.classList.remove('on');pt.textContent='⏸ 暫不規劃';} } }
   if(w.ltc){ setS('wlci-sel',w.ltc.ciSelVal,'wlci-inp'); setS('wlc-sel',w.ltc.careSelVal,'wlc-inp'); setS('wly-sel',w.ltc.yrsSelVal,'wly-inp'); set('wl-dm',w.ltc.dm); set('wl-do',w.ltc.dOne); if(!w.ltc.plan){ const pt=W('wpt-ltc'); if(pt){pt.classList.remove('on');pt.textContent='⏸ 暫不規劃';} } }
   if(w.family){ set('wf-debt',w.family.debt); set('wf-mon',w.family.mon); if(W('wfy-sel'))W('wfy-sel').value=w.family.yrs; if(W('wfc-sel'))W('wfc-sel').value=w.family.child; setS('wfe-sel',w.family.eduSelVal,'wfe-inp'); set('wf-self',w.family.self); if(!w.family.plan){ const pt=W('wpt-family'); if(pt){pt.classList.remove('on');pt.textContent='⏸ 暫不規劃';} } }
-  wantCalc();
+  wCalc();
 }
 
 // ── printWantReport：列印四金報告 ──
@@ -2766,7 +2551,7 @@ function applyManualHave() {
   if(W('wl-do'))   W('wl-do').value   = wFmtL(toWan(mo.disabilityOneTime));
   if(W('wf-life')) W('wf-life').value = wFmtL(toWan(mo.lifeTotal));
 
-  wantCalc();
+  wCalc();
 }
 
 // 清除全部 Have → 全零（從零開始討論）
@@ -2803,7 +2588,7 @@ buildDashboardData = function() {
 
 // GitHub Pages URL（請替換為你的實際網址）
 // 例：https://yourusername.github.io/yourrepo/want.html
-const WANT_PAGE_URL = 'https://ingbaker-bot.github.io/insurance-analyzer/want.html';  // 同 repo 的相對路徑，或填完整 URL
+const WANT_PAGE_URL = 'want.html';  // 同 repo 的相對路徑，或填完整 URL
 
 function generateShareLink() {
   const agentName = (document.getElementById('share-agent-name').value || '您的業務員').trim();
@@ -2831,19 +2616,6 @@ function copyShareLink() {
     });
 }
 
-// importFromCode：保戶傳來分享碼後，業務員讀取並帶入四金討論
-// 目前版本：分享碼是 hash，需要保戶同時傳 URL（含 # 後面的資料）
-// 業務員可以直接在瀏覽器開啟保戶傳來的完整連結來讀取
-// 簡化版：提示業務員開啟保戶傳來的連結
-function importFromCode() {
-  const code = (document.getElementById('import-code-input').value || '').trim().toUpperCase();
-  if (!code) return;
-  const resultEl = document.getElementById('import-result');
-  resultEl.style.display = 'block';
-  resultEl.innerHTML = '📋 分享碼 <strong>' + code + '</strong> 已記錄。<br>' +
-    '請請保戶將完整連結（包含#後面的資料）一起傳給您，直接在瀏覽器開啟即可讀取完整需求資料。<br>' +
-    '<span style="color:#16a34a">提示：保戶複製分享碼時已同時複製完整連結。</span>';
-}
 
 </script>
 </body>
