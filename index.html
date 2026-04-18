@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="保單智能分析">
 <meta name="theme-color" content="#1a1a2e">
 
-<title>保單智能分析｜總表升級版 v3.0</title>
+<title>保單智能分析｜總表升級版 v2.36</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- PDF 解析引擎 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -465,6 +465,66 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
   <button class="analyze-btn" id="analyze-btn" disabled>
     <span>🔍</span> 開始智慧分析與彙整
   </button>
+
+  <!-- 分隔線 + 直接討論四金入口 -->
+  <div style="display:flex;align-items:center;gap:12px;margin:14px 0">
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+    <span style="font-size:12px;color:var(--ink-mute);white-space:nowrap">或</span>
+    <div style="flex:1;height:1px;background:var(--border)"></div>
+  </div>
+  <button id="direct-want-btn" onclick="startDirectWant()"
+    style="width:100%;padding:13px;background:transparent;border:2px solid #7c3aed;border-radius:10px;font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:#7c3aed;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;letter-spacing:1px"
+    onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background='transparent'">
+    <span style="font-size:16px">🎯</span> 沒有保單？直接討論四金需求
+  </button>
+  <p style="font-size:11px;color:var(--ink-mute);text-align:center;margin-top:7px">
+    手動輸入現有保障，或從零開始討論需求，不需上傳 PDF
+  </p>
+
+  <!-- 產生保戶自填連結 -->
+  <div style="background:#fdf6ff;border:1px solid #e9d5ff;border-radius:10px;padding:14px 16px;margin-top:10px">
+    <div style="font-size:12px;font-weight:500;color:#7c3aed;margin-bottom:10px">📤 產生保戶自填專屬連結</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:10px;color:#a78bfa;margin-bottom:4px">您的名稱（顯示給保戶）</div>
+        <input type="text" id="share-agent-name" placeholder="例：李丞敏業務員"
+          style="width:100%;padding:7px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:13px;outline:none;font-family:'Noto Sans TC',sans-serif">
+      </div>
+      <div style="min-width:120px">
+        <div style="font-size:10px;color:#a78bfa;margin-bottom:4px;visibility:hidden">產生</div>
+        <button onclick="generateShareLink()"
+          style="width:100%;padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap">
+          產生連結
+        </button>
+      </div>
+    </div>
+    <div id="share-link-output" style="display:none;margin-top:10px">
+      <div style="font-size:10px;color:#a78bfa;margin-bottom:4px">專屬連結（複製後傳給保戶）</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="text" id="share-link-url" readonly
+          style="flex:1;padding:6px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:11px;font-family:monospace;background:#f5f3ff;outline:none;color:#6d28d9">
+        <button onclick="copyShareLink()"
+          style="padding:6px 12px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer;white-space:nowrap">
+          複製
+        </button>
+      </div>
+      <div style="font-size:10px;color:#a78bfa;margin-top:5px">保戶填完後會產生分享碼，業務員在下方輸入碼即可讀取結果</div>
+    </div>
+  </div>
+
+  <!-- 讀取保戶分享碼 -->
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;margin-top:10px">
+    <div style="font-size:12px;font-weight:500;color:#166534;margin-bottom:10px">📥 讀取保戶分享碼</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="import-code-input" placeholder="輸入6位分享碼，如 A3K7M2" maxlength="10"
+        style="flex:1;padding:7px 10px;border:1.5px solid #bbf7d0;border-radius:7px;font-size:13px;outline:none;font-family:monospace;text-transform:uppercase;letter-spacing:3px">
+      <button onclick="importFromCode()"
+        style="padding:8px 14px;background:#166534;color:#fff;border:none;border-radius:7px;font-size:13px;cursor:pointer;white-space:nowrap">
+        讀取
+      </button>
+    </div>
+    <div id="import-result" style="display:none;margin-top:8px;font-size:11px;color:#166534"></div>
+  </div>
 
   <div class="progress-wrap" id="progress-wrap">
     <div class="progress-label">
@@ -1822,14 +1882,71 @@ function renderWantPanel() {
         </div>
       </div>
 
-      <!-- Have 帶入摘要 -->
-      <div style="padding:14px 20px;background:var(--paper);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        <span style="font-size:11px;font-weight:500;color:var(--ink-light);margin-right:4px">✅ 已帶入 Have：</span>
+      <!-- Have 帶入摘要 + 手動輸入模式切換 -->
+      <div id="wh-summary-bar" style="padding:12px 20px;background:var(--paper);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <span style="font-size:11px;font-weight:500;color:var(--ink-light);margin-right:4px" id="wh-mode-label">✅ 已帶入 Have：</span>
         <span class="badge" style="background:#e3f2fd;color:#1565c0;font-size:11px" id="wh-life">壽險—</span>
         <span class="badge" style="background:#e8f5e9;color:#2e7d32;font-size:11px" id="wh-medical">醫療—</span>
         <span class="badge" style="background:#f3e5f5;color:#6a1b9a;font-size:11px" id="wh-ltc">長照—</span>
         <span class="badge" style="background:#fce4ec;color:#880e4f;font-size:11px" id="wh-cancer">癌症—</span>
-        <span style="font-size:10px;color:var(--ink-mute);margin-left:auto">切換至其他分頁修改保單數據後，回此頁自動更新</span>
+        <button onclick="toggleDirectMode()" id="wh-mode-btn"
+          style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--ink-mute);white-space:nowrap">
+          ✏️ 手動輸入 Have
+        </button>
+      </div>
+
+      <!-- 手動輸入 Have 展開區（預設隱藏，直接討論模式展開）-->
+      <div id="wh-manual-area" style="display:none;padding:14px 20px;background:#fdf6ff;border-bottom:1px solid #e9d5ff">
+        <div style="font-size:11px;font-weight:600;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+          <span>✏️ 手動輸入現有保障（Have）</span>
+          <span style="font-size:10px;color:#a78bfa;font-weight:400">填0代表目前沒有此保障</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px">
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">壽險保額（萬）</div>
+            <input type="number" id="wm-life" value="0" step="10" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">重大傷病一次金（萬）</div>
+            <input type="number" id="wm-ci" value="0" step="10" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">癌症一次金（萬）</div>
+            <input type="number" id="wm-cancer" value="0" step="10" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">疾病住院日額（元/日）</div>
+            <input type="number" id="wm-ward" value="0" step="500" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">實支雜費限額（萬）</div>
+            <input type="number" id="wm-misc" value="0" step="5" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">實支手術費（萬）</div>
+            <input type="number" id="wm-surgery" value="0" step="5" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">失能月給付（萬/月）</div>
+            <input type="number" id="wm-dismon" value="0" step="0.5" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+          <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">失能一次金（萬）</div>
+            <input type="number" id="wm-disone" value="0" step="10" oninput="applyManualHave()"
+              style="width:100%;border:none;font-family:var(--font-mono);font-size:13px;color:#1a1a2e;outline:none;background:transparent">
+          </div>
+        </div>
+        <button onclick="clearManualHave()"
+          style="margin-top:10px;font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #ddd6fe;background:transparent;cursor:pointer;color:#a78bfa">
+          清除全部 → 全從零開始討論
+        </button>
       </div>
       <div style="padding:0 20px 20px">
 
@@ -2523,6 +2640,209 @@ function printWantReport() {
     window.print();
     document.title = title;
   }, 200);
+}
+
+
+// ════════════════════════════════════════════════
+// 直接討論四金模式（無保單 / 手動 Have）
+// ════════════════════════════════════════════════
+
+let isDirectMode = false;  // true = 手動輸入模式，false = 從 PDF 帶入
+
+// 點「沒有保單？直接討論四金需求」按鈕
+function startDirectWant() {
+  isDirectMode = true;
+
+  // 若還沒有分析結果，建立一個空的 dummy entry 讓 tabs/panels 能渲染
+  if (!fileQueue.filter(f => f.status === 'done').length) {
+    const dummyId = 'direct-' + Date.now();
+    fileQueue.push({
+      id: dummyId,
+      name: '直接討論.pdf',
+      status: 'done',
+      data: {
+        insuredName: '',
+        policyNumber: '',
+        currency: '新台幣',
+        naturalDeath: '',
+        accidentDeath: '',
+        policies: [],
+        rawText: '',
+        // 全部 Have 設為 0
+        lifeTotal: 0, accidentTotal: 0, dailyWard: 0,
+        miscLimit: 0, surgeryLimit: 0, cancerOneTime: 0,
+        ciOneTime: 0, disabilityOneTime: 0, disabilityMonthly: 0,
+        accidentWard: 0, accidentMisc: 0, cancerWard: 0,
+        cancerClinic: 0, fractureLimit: 0, latestSurvAmt: 0,
+        survivalTotalAcc: 0, isDirect: true
+      }
+    });
+    renderQueue();
+  }
+
+  activeTab = 'want';
+  renderUI();
+
+  // 展開手動輸入區
+  setTimeout(() => {
+    const area = document.getElementById('wh-manual-area');
+    const btn  = document.getElementById('wh-mode-btn');
+    const lbl  = document.getElementById('wh-mode-label');
+    if (area) area.style.display = 'block';
+    if (btn)  btn.textContent = '📋 回到 PDF 帶入';
+    if (lbl)  lbl.textContent = '✏️ 手動輸入 Have：';
+    // 滾到四金分頁
+    const panel = document.getElementById('panel-want');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
+}
+
+// 切換手動輸入 / PDF 帶入模式
+function toggleDirectMode() {
+  isDirectMode = !isDirectMode;
+  const area = document.getElementById('wh-manual-area');
+  const btn  = document.getElementById('wh-mode-btn');
+  const lbl  = document.getElementById('wh-mode-label');
+  if (area) area.style.display = isDirectMode ? 'block' : 'none';
+  if (btn)  btn.textContent    = isDirectMode ? '📋 回到 PDF 帶入' : '✏️ 手動輸入 Have';
+  if (lbl)  lbl.textContent    = isDirectMode ? '✏️ 手動輸入 Have：' : '✅ 已帶入 Have：';
+  if (!isDirectMode) {
+    // 切回 PDF 模式：重新從 buildDashboardData 同步
+    wantSyncHave();
+  } else {
+    // 切入手動模式：套用手動值
+    applyManualHave();
+  }
+}
+
+// 將手動輸入的值套用到三階段 Have 顯示 + wantCalc
+// 覆蓋 buildDashboardData 的值（用一個 override 物件）
+let manualHaveOverride = null;
+
+function applyManualHave() {
+  const g = id => parseFloat((document.getElementById(id)||{}).value) || 0;
+  manualHaveOverride = {
+    lifeTotal:         g('wm-life')    * 10000,
+    ciOneTime:         g('wm-ci')      * 10000,
+    cancerOneTime:     g('wm-cancer')  * 10000,
+    dailyWard:         g('wm-ward'),           // 元/日
+    miscLimit:         g('wm-misc')    * 10000,
+    surgeryLimit:      g('wm-surgery') * 10000,
+    disabilityMonthly: g('wm-dismon')  * 10000,
+    disabilityOneTime: g('wm-disone')  * 10000,
+    accidentTotal: 0, accidentWard: 0, accidentMisc: 0,
+    cancerWard: 0, cancerClinic: 0, fractureLimit: 0,
+    latestSurvAmt: 0, survivalTotalAcc: 0,
+    insuredName: (document.getElementById('want-name-inp')||{}).value || '客戶'
+  };
+
+  // 更新 badge 顯示
+  const toWan = v => Math.round((v||0) / 10000 * 10) / 10;
+  const wFmtL = x => x > 0 ? x.toLocaleString('zh-TW', {maximumFractionDigits:1}) : '0';
+  const mo = manualHaveOverride;
+  if(W('wh-life'))    W('wh-life').textContent    = '壽險 ' + wFmtL(toWan(mo.lifeTotal)) + ' 萬';
+  if(W('wh-medical')) W('wh-medical').textContent = '醫療雜費 ' + wFmtL(toWan(mo.miscLimit)) + ' 萬';
+  if(W('wh-ltc'))     W('wh-ltc').textContent     = '失能月給 ' + wFmtL(toWan(mo.disabilityMonthly)) + ' 萬/月';
+  if(W('wh-cancer'))  W('wh-cancer').textContent  = '癌症/重疾 ' + wFmtL(toWan(mo.ciOneTime + mo.cancerOneTime)) + ' 萬';
+
+  // 更新三階段 Have 數值
+  const fmtE = v => v > 0 ? v.toLocaleString('zh-TW') + ' 元/日' : '—';
+  const fmtW = v => { const w = toWan(v); return w > 0 ? wFmtL(w) + ' 萬' : '—'; };
+  if(W('wph-ci'))     W('wph-ci').textContent     = fmtW(mo.ciOneTime);
+  if(W('wph-cancer')) W('wph-cancer').textContent = fmtW(mo.cancerOneTime);
+  if(W('wpm-ward'))   W('wpm-ward').textContent   = fmtE(mo.dailyWard);
+  if(W('wpm-misc'))   W('wpm-misc').textContent   = fmtW(mo.miscLimit);
+  if(W('wpm-surg'))   W('wpm-surg').textContent   = fmtW(mo.surgeryLimit);
+  if(W('wpm-accw'))   W('wpm-accw').textContent   = '—';
+  if(W('wpm-cward'))  W('wpm-cward').textContent  = '—';
+  if(W('wpa-disone')) W('wpa-disone').textContent = fmtW(mo.disabilityOneTime);
+  if(W('wpa-dismon')) W('wpa-dismon').textContent = mo.disabilityMonthly > 0 ? wFmtL(toWan(mo.disabilityMonthly)) + ' 萬/月' : '—';
+  if(W('wpa-ltc'))    W('wpa-ltc').textContent    = mo.disabilityMonthly > 0 ? wFmtL(toWan(mo.disabilityMonthly)) + ' 萬/月' : '—';
+  if(W('wpa-frac'))   W('wpa-frac').textContent   = '—';
+
+  // 更新長照金和家責金帶入欄位
+  if(W('wl-cih'))  W('wl-cih').value  = wFmtL(toWan(mo.ciOneTime + mo.cancerOneTime));
+  if(W('wl-dm'))   W('wl-dm').value   = wFmtL(toWan(mo.disabilityMonthly));
+  if(W('wl-do'))   W('wl-do').value   = wFmtL(toWan(mo.disabilityOneTime));
+  if(W('wf-life')) W('wf-life').value = wFmtL(toWan(mo.lifeTotal));
+
+  wantCalc();
+}
+
+// 清除全部 Have → 全零（從零開始討論）
+function clearManualHave() {
+  ['wm-life','wm-ci','wm-cancer','wm-ward','wm-misc',
+   'wm-surgery','wm-dismon','wm-disone'].forEach(id => {
+    if(W(id)) W(id).value = 0;
+  });
+  applyManualHave();
+}
+
+// ── 覆寫 buildDashboardData：手動模式時回傳 override ──
+// 保存原始函數
+const _origBuildDashboardData = buildDashboardData;
+buildDashboardData = function() {
+  if (isDirectMode && manualHaveOverride) {
+    // 回傳手動 Have 作為 db
+    return Object.assign({
+      insuredName: (document.getElementById('want-name-inp')||{}).value || '客戶',
+      lifeTotal: 0, accidentTotal: 0, survivalTotalAcc: 0, latestSurvAmt: 0,
+      dailyWard: 0, miscLimit: 0, surgeryLimit: 0,
+      cancerOneTime: 0, ciOneTime: 0, accidentWard: 0, accidentMisc: 0,
+      cancerWard: 0, cancerClinic: 0, disabilityOneTime: 0,
+      disabilityMonthly: 0, fractureLimit: 0
+    }, manualHaveOverride);
+  }
+  return _origBuildDashboardData();
+};
+
+
+// ════════════════════════════════════════════════
+// 保戶分享連結功能
+// ════════════════════════════════════════════════
+
+// GitHub Pages URL（請替換為你的實際網址）
+// 例：https://yourusername.github.io/yourrepo/want.html
+const WANT_PAGE_URL = 'https://ingbaker-bot.github.io/insurance-analyzer/want.html';  // 同 repo 的相對路徑，或填完整 URL
+
+function generateShareLink() {
+  const agentName = (document.getElementById('share-agent-name').value || '您的業務員').trim();
+  const url = WANT_PAGE_URL + '?agent=' + encodeURIComponent(agentName);
+  const outputEl = document.getElementById('share-link-output');
+  const urlEl    = document.getElementById('share-link-url');
+  urlEl.value    = url;
+  outputEl.style.display = 'block';
+}
+
+function copyShareLink() {
+  const url = document.getElementById('share-link-url').value;
+  if (!url) return;
+  navigator.clipboard.writeText(url)
+    .then(() => {
+      const btn = event.target;
+      const orig = btn.textContent;
+      btn.textContent = '✅ 已複製';
+      setTimeout(() => btn.textContent = orig, 1500);
+    })
+    .catch(() => {
+      document.getElementById('share-link-url').select();
+      document.execCommand('copy');
+      alert('✅ 已複製連結');
+    });
+}
+
+// importFromCode：保戶傳來分享碼後，業務員讀取並帶入四金討論
+// 目前版本：分享碼是 hash，需要保戶同時傳 URL（含 # 後面的資料）
+// 業務員可以直接在瀏覽器開啟保戶傳來的完整連結來讀取
+// 簡化版：提示業務員開啟保戶傳來的連結
+function importFromCode() {
+  const code = (document.getElementById('import-code-input').value || '').trim().toUpperCase();
+  if (!code) return;
+  const resultEl = document.getElementById('import-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '📋 分享碼 <strong>' + code + '</strong> 已記錄。<br>' +
+    '請請保戶將完整連結（包含#後面的資料）一起傳給您，直接在瀏覽器開啟即可讀取完整需求資料。<br>' +
+    '<span style="color:#16a34a">提示：保戶複製分享碼時已同時複製完整連結。</span>';
 }
 
 </script>
