@@ -180,84 +180,150 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
   </div>
   <div class="gold-bdy">
     <div class="grid2" style="margin-top:14px">
-      <div class="fg"><label>預計退休年齡</label><div class="inp-u"><input class="inp" type="number" id="r-ret" value="65" min="50" max="80" oninput="calcAll()"><span class="u">歲</span></div></div>
-      <div class="fg"><label>預估活到幾歲</label>
-        <select class="sel" id="r-life" onchange="calcAll()">
+      <div class="fg"><label>目前年齡</label><div style="position:relative"><input class="inp" type="number" id="p-age" value="35" step="1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">歲</span></div></div>
+      <div class="fg"><label>預計退休年齡</label><div style="position:relative"><input class="inp" type="number" id="r-ret" value="65" min="50" max="80" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">歲</span></div></div>
+      <div class="fg"><label>預估壽命</label>
+        <select class="sel" id="r-life" onchange="handleWantCustom('r-life','r-life-custom')">
           <option value="80">80 歲</option><option value="85" selected>85 歲</option>
           <option value="90">90 歲</option><option value="95">95 歲</option>
+          <option value="custom">自訂輸入…</option>
         </select>
+        <div id="r-life-custom" style="display:none;margin-top:5px;position:relative">
+          <input class="inp" type="number" id="r-life-inp" placeholder="歲" step="1" oninput="calcAll()">
+          <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">歲</span>
+        </div>
       </div>
-      <div class="fg"><label>退休後月收入目標 <em>（佔月薪幾成）</em></label>
-        <select class="sel" id="r-rep" onchange="calcAll()">
-          <option value="0.8">寬裕 (80%)</option><option value="0.7" selected>稍省 (70%)</option>
-          <option value="0.6">節省 (60%)</option><option value="0.5">最低 (50%)</option>
+      <div class="fg"><label>退休所得替代率</label>
+        <select class="sel" id="r-rep" onchange="handleWantCustom('r-rep','r-rep-custom')">
+          <option value="0.8">寬裕生活 (80%)</option>
+          <option value="0.7" selected>稍微節省 (70%)</option>
+          <option value="0.6">節省生活 (60%)</option>
+          <option value="0.5">最低需求 (50%)</option>
+          <option value="custom">自訂輸入…</option>
         </select>
+        <div id="r-rep-custom" style="display:none;margin-top:5px;position:relative">
+          <input class="inp" type="number" id="r-rep-inp" placeholder="%" step="1" min="1" max="100" oninput="calcAll()">
+          <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">%</span>
+        </div>
       </div>
-      <div class="fg"><label>勞保年金估算 <em>（月領）</em></label><div class="inp-u"><input class="inp" type="number" id="r-labor" value="2" step="0.5" oninput="calcAll()"><span class="u">萬/月</span></div></div>
+      <div class="fg"><label>目前月薪（稅前）</label><div style="position:relative"><input class="inp" type="number" id="p-salary" value="5" step="0.5" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/月</span></div></div>
+      <div class="fg"><label>勞保年金估算（月領）</label><div style="position:relative"><input class="inp" type="number" id="r-labor" value="2" step="0.5" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/月</span></div></div>
     </div>
-    <div class="fg"><label>已準備退休金</label><div class="inp-u"><input class="inp" type="number" id="r-saved" value="0" step="10" oninput="calcAll()"><span class="u">萬</span></div></div>
+    <div class="fg" style="margin-top:12px"><label>已準備退休金</label><div style="position:relative"><input class="inp" type="number" id="r-saved" value="0" step="10" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div></div>
+  <div class="fg"><label>保險生存金（年領）<em>（還本險 / 增額壽）</em></label><div style="position:relative"><input class="inp" type="number" id="r-surv" value="0" step="1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/年</span></div></div>
+    <div class="fg" style="margin-top:8px"><label>保險生存金 <em>（年領估算）</em></label><div style="position:relative"><input class="inp" type="number" id="r-surv" value="0" step="1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/年</span></div></div>
   </div>
 </div>
-
 <!-- ═══ 醫療金 ═══ -->
 <div class="gold-card crd-medical">
-  <div class="gold-hdr">
+  <div class="gold-hdr" onclick="wToggle('medical')">
     <div class="gold-ico">🏥</div>
-    <div><div class="gold-ttl">醫療金規劃</div><div class="gold-sub">生病住院時，您希望什麼樣的醫療品質？</div></div>
+    <div><div class="gold-ttl">醫療金規劃</div><div class="gold-sub">疾病住院 + 意外 + 癌症治療</div></div>
+    <div class="gold-tog-wrap" style="margin-left:auto">
+      <div class="plan-tog on" id="wpt-medical" onclick="wTogglePlan('medical',event)">📋 納入規劃</div>
+      <button class="chev-btn open" id="wcv-medical">▲</button>
+    </div>
   </div>
-  <div class="gold-bdy">
-    <div class="wsec" style="color:var(--medical)">住院與手術</div>
-    <div class="grid2">
-      <div class="fg"><label>希望住哪種病房</label>
-        <select class="sel" id="m-room" onchange="calcAll()">
-          <option value="0">健保病房（0差額）</option>
-          <option value="1500" selected>單人房（約1,500/日）</option>
-          <option value="3000">套房（約3,000/日）</option>
-          <option value="5000">VIP套房（約5,000/日）</option>
-        </select>
+  <div class="gold-bdy open" id="wbody-medical">
+    <!-- 三階段箭頭 -->
+    <div style="display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;gap:0;align-items:center;margin:14px 0 12px">
+      <div style="background:#1a1a7e;border-radius:6px 0 0 6px;padding:7px 8px;position:relative">
+        <div style="font-size:11px;font-weight:600;color:#fff;letter-spacing:1px">醫 療 前</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:1px">拿回主動權</div>
+        <div style="position:absolute;right:-10px;top:0;width:0;height:100%;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:10px solid #1a1a7e;z-index:1"></div>
       </div>
-      <div class="fg"><label>醫療雜費目標</label>
-        <select class="sel" id="m-misc" onchange="calcAll()">
-          <option value="20">20萬（基本）</option>
-          <option value="30" selected>30萬（一般）</option>
-          <option value="50">50萬（充裕）</option>
-        </select>
+      <div style="width:20px"></div>
+      <div style="background:#0d5b8e;padding:7px 8px 7px 14px;position:relative">
+        <div style="position:absolute;left:0;top:0;width:0;height:100%;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:10px solid var(--bg)"></div>
+        <div style="font-size:11px;font-weight:600;color:#fff;letter-spacing:1px">醫 療 中</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:1px">確保品質</div>
+        <div style="position:absolute;right:-10px;top:0;width:0;height:100%;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:10px solid #0d5b8e;z-index:1"></div>
+      </div>
+      <div style="width:20px"></div>
+      <div style="background:#4a7aa0;border-radius:0 6px 6px 0;padding:7px 8px 7px 14px;position:relative">
+        <div style="position:absolute;left:0;top:0;width:0;height:100%;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:10px solid var(--bg)"></div>
+        <div style="font-size:11px;font-weight:600;color:#fff;letter-spacing:1px">醫 療 後</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.85)">→ 長照金規劃</div>
       </div>
     </div>
-    <div class="wsec" style="color:#f59e0b">癌症保障</div>
-    <div class="grid2">
-      <div class="fg"><label>確診癌症時希望有多少一次金</label>
-        <select class="sel" id="m-cancer" onchange="calcAll()">
-          <option value="50">50萬（基本）</option>
-          <option value="100" selected>100萬（建議）</option>
-          <option value="200">200萬（充裕）</option>
-        </select>
+
+    <!-- 醫療前：重大傷病 & 癌症分開填 -->
+    <div class="wsec" style="color:#1a1a7e">⬜ 醫療前 — 確診時的主動權</div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="fg">
+        <label>重大傷病一次金目標</label>
+        <div style="position:relative"><input class="inp" type="number" id="m-ci-want" value="100" step="10" oninput="calcAll()">
+        <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div>
       </div>
+      <div class="fg">
+        <label>癌症一次金目標</label>
+        <div style="position:relative"><input class="inp" type="number" id="m-cancer-want" value="100" step="10" oninput="calcAll()">
+        <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div>
+      </div>
+    </div>
+
+    <!-- 醫療中 -->
+    <div class="wsec" style="color:#0d5b8e">⬜ 醫療中 — 住院治療品質</div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="fg">
+        <label>目標病房差額</label>
+        <div style="position:relative"><input class="inp" type="number" id="m-room" value="1500" step="500" oninput="calcAll()">
+        <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">元/日</span></div>
+      </div>
+      <div class="fg">
+        <label>實支雜費目標</label>
+        <div style="position:relative"><input class="inp" type="number" id="m-misc" value="30" step="5" oninput="calcAll()">
+        <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div>
+      </div>
+      <div class="fg">
+        <label>手術費目標</label>
+        <div style="position:relative"><input class="inp" type="number" id="m-surg-want" value="20" step="5" oninput="calcAll()">
+        <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div>
+      </div>
+    </div>
+
+    <div class="ntc ntc-b">
+      醫療後（失能/長照）的規劃請填寫下方「長照金規劃」。
     </div>
   </div>
 </div>
 
 <!-- ═══ 長照金 ═══ -->
 <div class="gold-card crd-ltc">
-  <div class="gold-hdr">
+  <div class="gold-hdr" onclick="wToggle('ltc')">
     <div class="gold-ico">💪</div>
-    <div><div class="gold-ttl">長照金規劃</div><div class="gold-sub">需要長期照護時，您希望怎麼安排？</div></div>
+    <div><div class="gold-ttl">長照金規劃</div><div class="gold-sub">失能 / 長照月給付 + 重大傷病一次金</div></div>
+    <div class="gold-tog-wrap" style="margin-left:auto">
+      <div class="plan-tog on" id="wpt-ltc" onclick="wTogglePlan('ltc',event)">📋 納入規劃</div>
+      <button class="chev-btn open" id="wcv-ltc">▲</button>
+    </div>
   </div>
-  <div class="gold-bdy">
-    <div class="grid2" style="margin-top:14px">
+  <div class="gold-bdy open" id="wbody-ltc">
+    <div class="wsec" style="color:#7c3aed">👴 長期照護方式</div>
+    <div class="grid2">
       <div class="fg"><label>希望的照護方式</label>
-        <select class="sel" id="l-care" onchange="calcAll()">
+        <select class="sel" id="l-care" onchange="handleWantCustom('l-care','l-care-custom')">
           <option value="1.5">居家照護（約1.5萬/月）</option>
           <option value="3.0" selected>外籍看護（約3.0萬/月）</option>
           <option value="4.5">本國看護（約4.5萬/月）</option>
           <option value="6.0">安養機構（約6.0萬/月）</option>
+          <option value="custom">自訂輸入…</option>
         </select>
+        <div id="l-care-custom" style="display:none;margin-top:5px;position:relative">
+          <input class="inp" type="number" id="l-care-inp" placeholder="萬/月" step="0.5" oninput="calcAll()">
+          <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/月</span>
+        </div>
       </div>
       <div class="fg"><label>預估需要照護幾年</label>
-        <select class="sel" id="l-yrs" onchange="calcAll()">
+        <select class="sel" id="l-yrs" onchange="handleWantCustom('l-yrs','l-yrs-custom')">
           <option value="5">5年</option><option value="7" selected>7年</option>
           <option value="10">10年</option><option value="15">15年</option>
+          <option value="custom">自訂輸入…</option>
         </select>
+        <div id="l-yrs-custom" style="display:none;margin-top:5px;position:relative">
+          <input class="inp" type="number" id="l-yrs-inp" placeholder="年" step="1" oninput="calcAll()">
+          <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">年</span>
+        </div>
       </div>
     </div>
     <div class="ntc ntc-r">意外險的失能保額，若因疾病（如中風、失智）導致的失能並不理賠，長照缺口仍然存在。</div>
@@ -271,15 +337,21 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
     <div><div class="gold-ttl">家庭責任金</div><div class="gold-sub">若您突然不在，家人每月需要多少生活費？</div></div>
   </div>
   <div class="gold-bdy">
-    <div class="grid2" style="margin-top:14px">
-      <div class="fg"><label>家庭每月支出</label><div class="inp-u"><input class="inp" type="number" id="f-mon" value="0" step="0.5" oninput="calcAll()"><span class="u">萬/月</span></div></div>
+    <div class="wsec" style="color:#dc2626">💳 負債項目</div>
+    <div class="fg" style="margin-bottom:12px"><label>借貸餘額（房貸＋車貸＋信貸）</label>
+      <div style="position:relative"><input class="inp" type="number" id="f-debt" value="0" step="10" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div>
+    </div>
+    <div class="wsec" style="color:#dc2626">👨‍👩‍👧 家庭生活保障</div>
+    <div class="grid2">
+      <div class="fg"><label>家庭月支出</label><div style="position:relative"><input class="inp" type="number" id="f-mon" value="0" step="0.5" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/月</span></div></div>
       <div class="fg"><label>需要保障幾年</label>
         <select class="sel" id="f-yrs" onchange="calcAll()">
           <option value="5">5年</option><option value="10" selected>10年</option>
-          <option value="15">15年</option><option value="20">20年</option>
+          <option value="15">15年</option><option value="20">20年</option><option value="25">25年</option>
         </select>
       </div>
     </div>
+    <div class="wsec" style="color:#dc2626">🎓 子女教育金</div>
     <div class="grid2">
       <div class="fg"><label>子女人數</label>
         <select class="sel" id="f-child" onchange="calcAll()">
@@ -288,16 +360,22 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
         </select>
       </div>
       <div class="fg"><label>每人教育金目標</label>
-        <select class="sel" id="f-edu" onchange="calcAll()">
-          <option value="100">100萬</option><option value="200">200萬</option>
-          <option value="300" selected>300萬</option><option value="500">500萬</option>
+        <select class="sel" id="f-edu" onchange="handleWantCustom('f-edu','f-edu-custom')">
+          <option value="100">100萬（國內大學）</option>
+          <option value="200">200萬（含研究所）</option>
+          <option value="300" selected>300萬（完整規劃）</option>
+          <option value="500">500萬（含海外留學）</option>
+          <option value="custom">自訂輸入…</option>
         </select>
+        <div id="f-edu-custom" style="display:none;margin-top:5px;position:relative">
+          <input class="inp" type="number" id="f-edu-inp" placeholder="萬" step="10" oninput="calcAll()">
+          <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span>
+        </div>
       </div>
     </div>
-    <div class="fg"><label>現有借貸餘額 <em>（房貸+車貸+信貸）</em></label><div class="inp-u"><input class="inp" type="number" id="f-debt" value="0" step="10" oninput="calcAll()"><span class="u">萬</span></div></div>
+    <div class="ntc ntc-r" style="margin-top:10px">意外險保額不列入減項——若因疾病身故，意外險不理賠，家庭責任缺口仍存在。</div>
   </div>
 </div>
-
 <!-- 提交 -->
 <button class="submit-btn" onclick="generateResult()">
   <span>📊</span> 產生我的保障需求摘要
@@ -341,9 +419,11 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 </main>
 
 <script>
-// ── GAS Web App URL（請填入你的 GAS 部署網址）──
+// ══════════════════════════════════════════
+// ★ 部署後在這裡填入 GAS Web App URL ★
 // 格式：https://script.google.com/macros/s/XXXXXX/exec
-const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzuWlmS_93RAOuHkixi711ZkXF7JzDiIB-Noco9UDSf-8GbUEnd4l46KATZKH7Mbxnn/exec';  // 留空則不自動儲存，保戶只能截圖
+// ══════════════════════════════════════════
+const GAS_WEBAPP_URL = '';  // ← 填這裡
 
 // 從 URL 讀取業務員名稱
 const urlParams = new URLSearchParams(window.location.search);
@@ -360,41 +440,102 @@ const fmtS = x => x.toLocaleString('zh-TW', {maximumFractionDigits:1});
 
 let lastResult = null;
 
+// 下拉選「自訂輸入…」後顯示輸入框
+function handleWantCustom(selId, customDivId) {
+  const sel = document.getElementById(selId);
+  const div = document.getElementById(customDivId);
+  if (!sel || !div) return;
+  div.style.display = sel.value === 'custom' ? 'block' : 'none';
+  calcAll();
+}
+
+function wToggle(id) {
+  const body = document.getElementById('wbody-'+id);
+  const cv   = document.getElementById('wcv-'+id);
+  if(!body||!cv) return;
+  const isOpen = body.classList.toggle('open');
+  cv.classList.toggle('open', isOpen);
+  cv.textContent = isOpen ? '▲' : '▼';
+}
+function wTogglePlan(id, e) {
+  e.stopPropagation();
+  const pt   = document.getElementById('wpt-'+id);
+  const body = document.getElementById('wbody-'+id);
+  const on   = pt.classList.toggle('on');
+  pt.textContent = on ? '📋 納入規劃' : '⏸ 暫不規劃';
+  if(body){
+    body.style.opacity      = on ? '1' : '0.35';
+    body.style.pointerEvents= on ? '' : 'none';
+    body.style.userSelect   = on ? '' : 'none';
+  }
+  calcAll();
+}
+function wIsPlan(id){ return (document.getElementById('wpt-'+id)||{classList:{contains:()=>true}}).classList.contains('on'); }
+
 function calcAll() {
   // 退休金
-  const age = n('p-age'), salary = n('p-salary');
-  const ret = n('r-ret'), life = s('r-life');
-  const rep = s('r-rep'), labor = n('r-labor'), saved = n('r-saved');
-  const yrs = Math.max(0, life - ret);
-  const rNeed = salary * rep * 12 * yrs;
-  const rHave = saved + labor * 12 * yrs;
-  const rGap = Math.max(0, rNeed - rHave);
+  const age    = n('p-age'), salary = n('p-salary');
+  const ret    = n('r-ret');
+  // 壽命：支援自訂
+  const lifeEl = document.getElementById('r-life');
+  const life   = lifeEl.value === 'custom' ? (n('r-life-inp') || 85) : (parseFloat(lifeEl.value) || 85);
+  // 替代率：支援自訂
+  const repEl  = document.getElementById('r-rep');
+  let rep      = repEl.value === 'custom' ? (n('r-rep-inp') / 100 || 0.7) : (parseFloat(repEl.value) || 0.7);
+  const labor  = n('r-labor'), saved = n('r-saved'), surv = n('r-surv');
+  const yrs    = Math.max(0, life - ret);
+  const rNeed  = salary * rep * 12 * yrs;
+  const surv   = n('r-surv');
+  const rHave  = saved + labor * 12 * yrs + surv * yrs;
+  const rGap   = Math.max(0, rNeed - rHave);
 
-  // 醫療金（簡化：看缺口）
-  const mRoom = s('m-room'), mMisc = s('m-misc'), mCancer = s('m-cancer');
-  const hWard = n('h-ward'), hMisc = n('h-misc'), hCancer = n('h-oncetime');
-  const gRoom = Math.max(0, mRoom - hWard);
-  const gMisc = Math.max(0, mMisc - hMisc);
-  const gCancer = Math.max(0, mCancer - hCancer);
-  const mGap = gMisc + gCancer;
+  // 醫療金（三階段 — 醫療前/中分開，醫療後移至長照金）
+  const mRoom     = s('m-room');
+  const mMisc     = n('m-misc');
+  const mCiWant   = n('m-ci-want')     || 100;   // 醫療前：重大傷病目標
+  const mCancer   = n('m-cancer-want') || 100;   // 醫療前：癌症一次金目標
+  const mSurgWant = n('m-surg-want')   || 20;    // 醫療中：手術費目標
+  const hWard     = n('h-ward');
+  const hMisc     = n('h-misc');
+  const hCi       = n('h-ci')   || 0;            // 重大傷病 Have（若有獨立欄位）
+  const hCancer   = n('h-oncetime');              // 癌症/重疾 Have（合計）
+  const hSurg     = n('h-surg') || 0;
+  const hDisMon   = n('h-dismon');
+  const gMisc     = Math.max(0, mMisc   - hMisc);
+  const gCi       = Math.max(0, mCiWant - hCi);
+  const gCancer   = Math.max(0, mCancer - hCancer);
+  const gSurg     = Math.max(0, mSurgWant - hSurg);
+  const mGap      = gMisc + gCi + gCancer + gSurg;
 
-  // 長照金
-  const lCare = s('l-care'), lYrs = s('l-yrs');
+  // 長照金（支援自訂 + 重大傷病一次金）
+  const lCareEl = document.getElementById('l-care');
+  const lCare   = lCareEl.value === 'custom' ? (n('l-care-inp') || 3) : (parseFloat(lCareEl.value) || 3);
+  const lYrsEl  = document.getElementById('l-yrs');
+  const lYrs    = lYrsEl.value === 'custom' ? (n('l-yrs-inp') || 7) : (parseFloat(lYrsEl.value) || 7);
+  const lCiEl   = document.getElementById('l-ci-want');
+  const lCiWant = lCiEl.value === 'custom' ? (n('l-ci-inp') || 100) : (parseFloat(lCiEl.value) || 100);
+  const hOnce   = n('h-oncetime');
   const hDisMon = n('h-dismon');
-  const lNeed = lCare * 12 * lYrs;
-  const lHave = hDisMon * 12 * lYrs;
-  const lGap = Math.max(0, lNeed - lHave);
+  const lCiGap  = Math.max(0, lCiWant - hOnce);
+  const lNeed   = lCare * 12 * lYrs;
+  const lHave   = hDisMon * 12 * lYrs;
+  const lGap    = lCiGap + Math.max(0, lNeed - lHave);
 
-  // 家庭責任金
-  const fMon = n('f-mon'), fYrs = s('f-yrs');
-  const fChild = s('f-child'), fEdu = s('f-edu'), fDebt = n('f-debt');
-  const hLife = n('h-life');
-  const fNeed = fDebt + fMon * 12 * fYrs + fEdu * fChild;
-  const fGap = Math.max(0, fNeed - hLife);
+  // 家庭責任金（支援教育金自訂）
+  const fMon   = n('f-mon');
+  const fYrsEl = document.getElementById('f-yrs');
+  const fYrs   = parseFloat(fYrsEl.value) || 10;
+  const fChild = parseFloat(document.getElementById('f-child').value) || 0;
+  const fEduEl = document.getElementById('f-edu');
+  const fEdu   = fEduEl.value === 'custom' ? (n('f-edu-inp') || 300) : (parseFloat(fEduEl.value) || 300);
+  const fDebt  = n('f-debt');
+  const hLife  = n('h-life');
+  const fNeed  = fDebt + fMon * 12 * fYrs + fEdu * fChild;
+  const fGap   = Math.max(0, fNeed - hLife);
 
   lastResult = { rGap, mGap, lGap, fGap,
     name: G('p-name').value || '客戶',
-    age, salary, ret, life, rep, labor, saved,
+    age, salary, ret, life, rep, labor, saved, surv,
     mRoom, mMisc, mCancer, lCare, lYrs,
     fMon, fYrs, fChild, fEdu, fDebt,
     hLife, hWard: n('h-ward'), hMisc, hSurg: n('h-surg'), hDisMon,
@@ -444,7 +585,7 @@ function encodeData(data) {
   return displayCode;
 }
 
-async function saveToCloud() {
+async async function saveToCloud() {
   if (!GAS_WEBAPP_URL) {
     document.getElementById('save-status').textContent = '⚠️ 業務員尚未設定後端連結，請直接截圖傳給業務員';
     return;
@@ -463,8 +604,11 @@ async function saveToCloud() {
         name: G('p-name').value || '',
         age:    G('p-age').value,    salary: G('p-salary').value,
         ret:    G('r-ret').value,    life:   G('r-life').value,
-        rep:    G('r-rep').value,    labor:  G('r-labor').value, saved: G('r-saved').value,
-        mRoom:  G('m-room').value,   mMisc:  G('m-misc').value, mCancer: G('m-cancer').value,
+        rep:    (G('r-rep').value === 'custom' ? (parseFloat(G('r-rep-inp').value)/100||0.7) : (parseFloat(G('r-rep').value)||0.7)),
+        labor:  G('r-labor').value, saved: G('r-saved').value, surv: G('r-surv').value,
+        mRoom:  G('m-room').value,   mMisc:  G('m-misc').value,
+        mCiWant: G('m-ci-want')?.value||'100', mCancerWant: G('m-cancer-want')?.value||'100',
+        mSurgWant: G('m-surg-want')?.value||'20',
         lCare:  G('l-care').value,   lYrs:   G('l-yrs').value,
         fMon:   G('f-mon').value,    fYrs:   G('f-yrs').value,
         fChild: G('f-child').value,  fEdu:   G('f-edu').value,  fDebt: G('f-debt').value,
@@ -494,6 +638,27 @@ async function saveToCloud() {
     btn.disabled = false;
     status.textContent = '⚠️ ' + err.message + '，請截圖傳給業務員';
     console.error(err);
+  }
+}
+
+function shareResult() {
+  const name  = G('p-name').value || '保戶';
+  const agent = agentName || '業務員';
+  const r = lastResult || {};
+  const grand = Math.round((r.rGap||0)+(r.mGap||0)+(r.lGap||0)+(r.fGap||0));
+  const text  = '【四金需求規劃摘要】\n'
+    + '姓名：' + name + '\n'
+    + '退休金缺口：' + Math.round(r.rGap||0) + ' 萬\n'
+    + '醫療金缺口：' + Math.round(r.mGap||0) + ' 萬\n'
+    + '長照金缺口：' + Math.round(r.lGap||0) + ' 萬\n'
+    + '家庭責任金缺口：' + Math.round(r.fGap||0) + ' 萬\n'
+    + '四金合計缺口：' + grand + ' 萬\n'
+    + '（由 ' + agent + ' 四金需求規劃問卷產出）';
+  if (navigator.share) {
+    navigator.share({ title: '四金需求規劃摘要', text })
+      .catch(() => navigator.clipboard.writeText(text).then(() => alert('✅ 已複製摘要')));
+  } else {
+    navigator.clipboard.writeText(text).then(() => alert('✅ 已複製，請貼給業務員'));
   }
 }
 
