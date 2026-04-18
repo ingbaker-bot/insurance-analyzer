@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>四金需求規劃 — 專屬問卷</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a2e; --ink2:#3a3a5c; --ink3:#7878a0;
+  --bg:#f7f5f0; --surface:#fff; --paper:#f2efe8; --border:#e0dcd0;
+  --gold:#c9a84c; --gold2:#e8d49a; --gold3:#fdf6e3;
+  --agent:#7c3aed;
+  --retire:#2563eb; --retire-bg:#eff6ff; --retire-bd:#bfdbfe;
+  --medical:#0891b2; --medical-bg:#ecfeff; --medical-bd:#a5f3fc;
+  --ltc:#7c3aed; --ltc-bg:#f5f3ff; --ltc-bd:#ddd6fe;
+  --family:#dc2626; --family-bg:#fef2f2; --family-bd:#fecaca;
+  --ok:#16a34a; --gap:#dc2626;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* Header */
+header{background:var(--ink);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold)}
+.logo{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:16px;letter-spacing:1px}
+.logo sub{font-size:10px;color:var(--gold2);margin-left:8px;font-family:'Noto Sans TC',sans-serif}
+.agent-badge{font-size:11px;background:rgba(124,58,237,.3);color:#c4b5fd;padding:3px 10px;border-radius:20px;border:1px solid rgba(124,58,237,.4)}
+
+main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
+
+/* 歡迎卡 */
+.welcome-card{background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:20px;margin-bottom:20px;color:#fff}
+.welcome-card h2{font-family:'Noto Serif TC',serif;font-size:17px;margin-bottom:6px}
+.welcome-card p{font-size:12px;opacity:.85;line-height:1.7}
+.agent-info{margin-top:12px;background:rgba(255,255,255,.12);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.agent-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.agent-name{font-size:13px;font-weight:500}
+.agent-note{font-size:11px;opacity:.7;margin-top:2px}
+
+/* 基本資料 */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.section-hdr{padding:13px 18px;background:var(--paper);border-bottom:1px solid var(--border);font-family:'Noto Serif TC',serif;font-size:14px;display:flex;align-items:center;gap:8px}
+.section-hdr::before{content:'';width:4px;height:16px;background:var(--agent);border-radius:2px;display:inline-block;flex-shrink:0}
+.section-body{padding:16px 18px}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+.fg label{font-size:12px;font-weight:500;color:var(--ink2)}
+.fg label em{font-size:10px;color:var(--ink3);font-style:normal;font-weight:400;margin-left:4px}
+.inp,.sel{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:14px;color:var(--ink);background:#fff;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.inp:focus,.sel:focus{border-color:var(--agent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%237878a0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer}
+.inp-u{position:relative}
+.inp-u .inp{padding-right:42px}
+.inp-u .u{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--ink3);pointer-events:none}
+
+/* Have 輸入小格 */
+.have-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.have-item{background:var(--paper);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.have-item label{font-size:10px;color:var(--ink3);display:block;margin-bottom:3px}
+.have-item input{width:100%;border:none;background:transparent;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none}
+.have-note{font-size:11px;color:var(--ink3);margin-top:8px;line-height:1.6}
+
+/* 四金卡片 */
+.gold-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.gold-hdr{padding:12px 18px;display:flex;align-items:center;gap:10px}
+.gold-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.gold-ttl{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600}
+.gold-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+.gold-bdy{padding:0 18px 18px}
+.crd-retire .gold-hdr{background:var(--retire-bg);border-bottom:1px solid var(--retire-bd)}
+.crd-retire .gold-ico{background:var(--retire-bd)}
+.crd-retire .gold-ttl{color:var(--retire)}
+.crd-medical .gold-hdr{background:var(--medical-bg);border-bottom:1px solid var(--medical-bd)}
+.crd-medical .gold-ico{background:var(--medical-bd)}
+.crd-medical .gold-ttl{color:var(--medical)}
+.crd-ltc .gold-hdr{background:var(--ltc-bg);border-bottom:1px solid var(--ltc-bd)}
+.crd-ltc .gold-ico{background:var(--ltc-bd)}
+.crd-ltc .gold-ttl{color:var(--ltc)}
+.crd-family .gold-hdr{background:var(--family-bg);border-bottom:1px solid var(--family-bd)}
+.crd-family .gold-ico{background:var(--family-bd)}
+.crd-family .gold-ttl{color:var(--family)}
+.wsec{font-size:11px;font-weight:500;letter-spacing:.4px;margin:12px 0 6px}
+
+/* 結果卡 */
+.result-card{background:var(--ink);border-radius:14px;padding:20px;margin-top:20px;display:none}
+.result-card.show{display:block}
+.result-card h3{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:15px;margin-bottom:14px}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.res-item{background:rgba(255,255,255,.07);border-radius:8px;padding:10px 12px}
+.res-lbl{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.8px;margin-bottom:3px}
+.res-val{font-family:'DM Mono',monospace;font-size:15px;color:#fff}
+.res-val.r{color:#fca5a5}
+.res-val.g{color:#86efac}
+.res-tot{display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid rgba(255,255,255,.15)}
+.res-tot-lbl{font-size:12px;color:var(--gold2)}
+.res-tot-val{font-family:'DM Mono',monospace;font-size:22px;color:var(--gold);font-weight:700}
+
+/* 分享碼 */
+.share-box{background:rgba(255,255,255,.08);border-radius:10px;padding:16px;margin-top:14px;text-align:center}
+.share-code{font-family:'DM Mono',monospace;font-size:36px;font-weight:700;color:#fff;letter-spacing:8px;margin:10px 0}
+.share-hint{font-size:11px;color:rgba(255,255,255,.6);line-height:1.6}
+
+/* 提交按鈕 */
+.submit-btn{width:100%;padding:15px;background:var(--agent);color:#fff;border:none;border-radius:10px;font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;margin-top:20px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.submit-btn:hover{background:#6d28d9;transform:translateY(-1px)}
+
+.ntc{font-size:11px;border-radius:6px;padding:7px 10px;margin-top:8px;line-height:1.7}
+.ntc-r{background:#fff5f5;border-left:3px solid #ef4444;color:#991b1b}
+
+@media(max-width:420px){
+  .grid2{grid-template-columns:1fr}
+  .res-grid{grid-template-columns:1fr}
+  .have-grid{grid-template-columns:1fr 1fr}
+}
+@media print {
+  header, .welcome-card .agent-info button, .submit-btn, #import-code-input, .share-box button { display: none !important; }
+  body { background: #fff; }
+  .result-card { display: block !important; background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  main { padding: 10px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">四金需求規劃 <sub>保戶填寫版</sub></div>
+  <div class="agent-badge" id="hdr-agent">專屬問卷</div>
+</header>
+
+<main>
+
+<!-- 歡迎卡（業務員名稱從 URL 帶入）-->
+<div class="welcome-card">
+  <h2>您好！請花 3 分鐘填寫您的保障需求</h2>
+  <p>這份問卷將協助您的業務員了解您目前的保障現況與期望，<br>讓後續的保障規劃更貼近您的需求。<br>所有資料僅供規劃參考使用。</p>
+  <div class="agent-info">
+    <div class="agent-avatar">👤</div>
+    <div>
+      <div class="agent-name" id="agent-name-display">您的業務員</div>
+      <div class="agent-note">點選分享給業務員，讓他了解您的需求</div>
+    </div>
+  </div>
+</div>
+
+<!-- 基本資料 -->
+<div class="section-card">
+  <div class="section-hdr">基本資料</div>
+  <div class="section-body">
+    <div class="grid2">
+      <div class="fg"><label>您的姓名</label><input class="inp" type="text" id="p-name" placeholder="王小明"></div>
+      <div class="fg"><label>目前年齡</label><div class="inp-u"><input class="inp" type="number" id="p-age" value="35" min="18" max="80" oninput="calcAll()"><span class="u">歲</span></div></div>
+    </div>
+    <div class="fg"><label>目前月薪 <em>（稅前）</em></label><div class="inp-u"><input class="inp" type="number" id="p-salary" value="5" step="0.5" oninput="calcAll()"><span class="u">萬/月</span></div></div>
+  </div>
+</div>
+
+<!-- 現有保障（Have）-->
+<div class="section-card">
+  <div class="section-hdr">目前的保障現況（Have）<span style="font-size:10px;color:var(--ink3);font-family:'Noto Sans TC';font-weight:400;margin-left:8px">沒有的項目填 0 即可</span></div>
+  <div class="section-body">
+    <div class="have-grid">
+      <div class="have-item"><label>壽險保額（萬）</label><input type="number" id="h-life" value="0" step="10" oninput="calcAll()"></div>
+      <div class="have-item"><label>重大傷病 / 癌症一次金（萬）</label><input type="number" id="h-oncetime" value="0" step="10" oninput="calcAll()"></div>
+      <div class="have-item"><label>住院日額（元/日）</label><input type="number" id="h-ward" value="0" step="500" oninput="calcAll()"></div>
+      <div class="have-item"><label>實支雜費限額（萬）</label><input type="number" id="h-misc" value="0" step="5" oninput="calcAll()"></div>
+      <div class="have-item"><label>實支手術費（萬）</label><input type="number" id="h-surg" value="0" step="5" oninput="calcAll()"></div>
+      <div class="have-item"><label>失能 / 長照月給付（萬/月）</label><input type="number" id="h-dismon" value="0" step="0.5" oninput="calcAll()"></div>
+    </div>
+    <p class="have-note">💡 如果不清楚現有保障金額，填 0 也沒關係，業務員會協助您整理。</p>
+  </div>
+</div>
+
+<!-- ═══ 退休金 ═══ -->
+<div class="gold-card crd-retire">
+  <div class="gold-hdr">
+    <div class="gold-ico">🏖</div>
+    <div><div class="gold-ttl">退休金規劃</div><div class="gold-sub">退休後每月需要多少生活費？</div></div>
+  </div>
+  <div class="gold-bdy">
+    <div class="grid2" style="margin-top:14px">
+      <div class="fg"><label>預計退休年齡</label><div class="inp-u"><input class="inp" type="number" id="r-ret" value="65" min="50" max="80" oninput="calcAll()"><span class="u">歲</span></div></div>
+      <div class="fg"><label>預估活到幾歲</label>
+        <select class="sel" id="r-life" onchange="calcAll()">
+          <option value="80">80 歲</option><option value="85" selected>85 歲</option>
+          <option value="90">90 歲</option><option value="95">95 歲</option>
+        </select>
+      </div>
+      <div class="fg"><label>退休後月收入目標 <em>（佔月薪幾成）</em></label>
+        <select class="sel" id="r-rep" onchange="calcAll()">
+          <option value="0.8">寬裕 (80%)</option><option value="0.7" selected>稍省 (70%)</option>
+          <option value="0.6">節省 (60%)</option><option value="0.5">最低 (50%)</option>
+        </select>
+      </div>
+      <div class="fg"><label>勞保年金估算 <em>（月領）</em></label><div class="inp-u"><input class="inp" type="number" id="r-labor" value="2" step="0.5" oninput="calcAll()"><span class="u">萬/月</span></div></div>
+    </div>
+    <div class="fg"><label>已準備退休金</label><div class="inp-u"><input class="inp" type="number" id="r-saved" value="0" step="10" oninput="calcAll()"><span class="u">萬</span></div></div>
+  </div>
+</div>
+
+<!-- ═══ 醫療金 ═══ -->
+<div class="gold-card crd-medical">
+  <div class="gold-hdr">
+    <div class="gold-ico">🏥</div>
+    <div><div class="gold-ttl">醫療金規劃</div><div class="gold-sub">生病住院時，您希望什麼樣的醫療品質？</div></div>
+  </div>
+  <div class="gold-bdy">
+    <div class="wsec" style="color:var(--medical)">住院與手術</div>
+    <div class="grid2">
+      <div class="fg"><label>希望住哪種病房</label>
+        <select class="sel" id="m-room" onchange="calcAll()">
+          <option value="0">健保病房（0差額）</option>
+          <option value="1500" selected>單人房（約1,500/日）</option>
+          <option value="3000">套房（約3,000/日）</option>
+          <option value="5000">VIP套房（約5,000/日）</option>
+        </select>
+      </div>
+      <div class="fg"><label>醫療雜費目標</label>
+        <select class="sel" id="m-misc" onchange="calcAll()">
+          <option value="20">20萬（基本）</option>
+          <option value="30" selected>30萬（一般）</option>
+          <option value="50">50萬（充裕）</option>
+        </select>
+      </div>
+    </div>
+    <div class="wsec" style="color:#f59e0b">癌症保障</div>
+    <div class="grid2">
+      <div class="fg"><label>確診癌症時希望有多少一次金</label>
+        <select class="sel" id="m-cancer" onchange="calcAll()">
+          <option value="50">50萬（基本）</option>
+          <option value="100" selected>100萬（建議）</option>
+          <option value="200">200萬（充裕）</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 長照金 ═══ -->
+<div class="gold-card crd-ltc">
+  <div class="gold-hdr">
+    <div class="gold-ico">💪</div>
+    <div><div class="gold-ttl">長照金規劃</div><div class="gold-sub">需要長期照護時，您希望怎麼安排？</div></div>
+  </div>
+  <div class="gold-bdy">
+    <div class="grid2" style="margin-top:14px">
+      <div class="fg"><label>希望的照護方式</label>
+        <select class="sel" id="l-care" onchange="calcAll()">
+          <option value="1.5">居家照護（約1.5萬/月）</option>
+          <option value="3.0" selected>外籍看護（約3.0萬/月）</option>
+          <option value="4.5">本國看護（約4.5萬/月）</option>
+          <option value="6.0">安養機構（約6.0萬/月）</option>
+        </select>
+      </div>
+      <div class="fg"><label>預估需要照護幾年</label>
+        <select class="sel" id="l-yrs" onchange="calcAll()">
+          <option value="5">5年</option><option value="7" selected>7年</option>
+          <option value="10">10年</option><option value="15">15年</option>
+        </select>
+      </div>
+    </div>
+    <div class="ntc ntc-r">意外險的失能保額，若因疾病（如中風、失智）導致的失能並不理賠，長照缺口仍然存在。</div>
+  </div>
+</div>
+
+<!-- ═══ 家庭責任金 ═══ -->
+<div class="gold-card crd-family">
+  <div class="gold-hdr">
+    <div class="gold-ico">🏠</div>
+    <div><div class="gold-ttl">家庭責任金</div><div class="gold-sub">若您突然不在，家人每月需要多少生活費？</div></div>
+  </div>
+  <div class="gold-bdy">
+    <div class="grid2" style="margin-top:14px">
+      <div class="fg"><label>家庭每月支出</label><div class="inp-u"><input class="inp" type="number" id="f-mon" value="0" step="0.5" oninput="calcAll()"><span class="u">萬/月</span></div></div>
+      <div class="fg"><label>需要保障幾年</label>
+        <select class="sel" id="f-yrs" onchange="calcAll()">
+          <option value="5">5年</option><option value="10" selected>10年</option>
+          <option value="15">15年</option><option value="20">20年</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg"><label>子女人數</label>
+        <select class="sel" id="f-child" onchange="calcAll()">
+          <option value="0" selected>無子女</option><option value="1">1人</option>
+          <option value="2">2人</option><option value="3">3人以上</option>
+        </select>
+      </div>
+      <div class="fg"><label>每人教育金目標</label>
+        <select class="sel" id="f-edu" onchange="calcAll()">
+          <option value="100">100萬</option><option value="200">200萬</option>
+          <option value="300" selected>300萬</option><option value="500">500萬</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>現有借貸餘額 <em>（房貸+車貸+信貸）</em></label><div class="inp-u"><input class="inp" type="number" id="f-debt" value="0" step="10" oninput="calcAll()"><span class="u">萬</span></div></div>
+  </div>
+</div>
+
+<!-- 提交 -->
+<button class="submit-btn" onclick="generateResult()">
+  <span>📊</span> 產生我的保障需求摘要
+</button>
+
+<!-- 結果卡 -->
+<div class="result-card" id="result-card">
+  <h3>📊 您的四金保障需求摘要</h3>
+  <div class="res-grid">
+    <div class="res-item"><div class="res-lbl">退休金缺口</div><div class="res-val" id="res-r">—萬</div></div>
+    <div class="res-item"><div class="res-lbl">醫療金缺口</div><div class="res-val" id="res-m">—萬</div></div>
+    <div class="res-item"><div class="res-lbl">長照金缺口</div><div class="res-val" id="res-l">—萬</div></div>
+    <div class="res-item"><div class="res-lbl">家庭責任金缺口</div><div class="res-val" id="res-f">—萬</div></div>
+  </div>
+  <div class="res-tot">
+    <span class="res-tot-lbl">四金缺口合計</span>
+    <span class="res-tot-val" id="res-tot">—萬</span>
+  </div>
+
+  <!-- 操作按鈕 -->
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+    <button onclick="window.print()" style="flex:1;min-width:120px;padding:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+      🖨️ 列印 / 存 PDF
+    </button>
+    <button onclick="saveToCloud()" id="save-btn" style="flex:1;min-width:120px;padding:10px;background:#c9a84c;border:none;border-radius:8px;color:#1a1a2e;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+      ☁️ 儲存到業務員系統
+    </button>
+  </div>
+  <div id="save-status" style="margin-top:8px;font-size:11px;text-align:center;color:rgba(255,255,255,.7);min-height:18px"></div>
+
+  <div class="share-box">
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px">📋 截圖後傳給業務員</div>
+    <div class="share-hint" style="font-size:12px;line-height:1.8">
+      點「列印 / 存 PDF」可以儲存一份在手機<br>
+      點「儲存到業務員系統」資料會自動送給業務員<br>
+      業務員收到 Email 通知後會聯絡您
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ── GAS Web App URL（請填入你的 GAS 部署網址）──
+// 格式：https://script.google.com/macros/s/XXXXXX/exec
+const GAS_WEBAPP_URL = '';  // 留空則不自動儲存，保戶只能截圖
+
+// 從 URL 讀取業務員名稱
+const urlParams = new URLSearchParams(window.location.search);
+const agentName = urlParams.get('agent') || '您的業務員';
+const agentCode = urlParams.get('code') || '';
+document.getElementById('agent-name-display').textContent = agentName;
+document.getElementById('hdr-agent').textContent = agentName + ' 專屬問卷';
+
+const G = id => document.getElementById(id);
+const n = id => parseFloat(G(id).value) || 0;
+const s = id => parseFloat(G(id).value) || 0;
+const fmt = x => Math.round(x*10)/10;
+const fmtS = x => x.toLocaleString('zh-TW', {maximumFractionDigits:1});
+
+let lastResult = null;
+
+function calcAll() {
+  // 退休金
+  const age = n('p-age'), salary = n('p-salary');
+  const ret = n('r-ret'), life = s('r-life');
+  const rep = s('r-rep'), labor = n('r-labor'), saved = n('r-saved');
+  const yrs = Math.max(0, life - ret);
+  const rNeed = salary * rep * 12 * yrs;
+  const rHave = saved + labor * 12 * yrs;
+  const rGap = Math.max(0, rNeed - rHave);
+
+  // 醫療金（簡化：看缺口）
+  const mRoom = s('m-room'), mMisc = s('m-misc'), mCancer = s('m-cancer');
+  const hWard = n('h-ward'), hMisc = n('h-misc'), hCancer = n('h-oncetime');
+  const gRoom = Math.max(0, mRoom - hWard);
+  const gMisc = Math.max(0, mMisc - hMisc);
+  const gCancer = Math.max(0, mCancer - hCancer);
+  const mGap = gMisc + gCancer;
+
+  // 長照金
+  const lCare = s('l-care'), lYrs = s('l-yrs');
+  const hDisMon = n('h-dismon');
+  const lNeed = lCare * 12 * lYrs;
+  const lHave = hDisMon * 12 * lYrs;
+  const lGap = Math.max(0, lNeed - lHave);
+
+  // 家庭責任金
+  const fMon = n('f-mon'), fYrs = s('f-yrs');
+  const fChild = s('f-child'), fEdu = s('f-edu'), fDebt = n('f-debt');
+  const hLife = n('h-life');
+  const fNeed = fDebt + fMon * 12 * fYrs + fEdu * fChild;
+  const fGap = Math.max(0, fNeed - hLife);
+
+  lastResult = { rGap, mGap, lGap, fGap,
+    name: G('p-name').value || '客戶',
+    age, salary, ret, life, rep, labor, saved,
+    mRoom, mMisc, mCancer, lCare, lYrs,
+    fMon, fYrs, fChild, fEdu, fDebt,
+    hLife, hWard: n('h-ward'), hMisc, hSurg: n('h-surg'), hDisMon,
+    hOnceTime: n('h-oncetime'),
+    agentName, agentCode
+  };
+  return lastResult;
+}
+
+function generateResult() {
+  const r = calcAll();
+  const grand = r.rGap + r.mGap + r.lGap + r.fGap;
+
+  // 顯示結果
+  const setRes = (id, val) => {
+    const el = G(id); el.textContent = fmtS(val) + ' 萬';
+    el.className = 'res-val ' + (val > 0 ? 'r' : 'g');
+  };
+  setRes('res-r', r.rGap); setRes('res-m', r.mGap);
+  setRes('res-l', r.lGap); setRes('res-f', r.fGap);
+  G('res-tot').textContent = fmtS(grand) + ' 萬';
+
+  // 產生分享碼：把關鍵數據壓縮成 base62
+  const code = encodeData(r);
+  G('share-code').textContent = code;
+
+  G('result-card').classList.add('show');
+  G('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Base62 編碼（取前6碼作為顯示碼，完整資料存 URL hash）
+const B62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function encodeData(data) {
+  const json = JSON.stringify(data);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  // 取 hash 前6碼作為顯示碼
+  let hash = 0;
+  for (let i = 0; i < b64.length; i++) {
+    hash = ((hash << 5) - hash) + b64.charCodeAt(i);
+    hash |= 0;
+  }
+  const displayCode = Math.abs(hash).toString(36).toUpperCase().padStart(6,'0').substring(0,6);
+  // 完整資料存在 URL hash，方便業務員讀取
+  if (history.replaceState) {
+    history.replaceState(null, '', '#' + encodeURIComponent(b64));
+  }
+  return displayCode;
+}
+
+async function saveToCloud() {
+  if (!GAS_WEBAPP_URL) {
+    document.getElementById('save-status').textContent = '⚠️ 業務員尚未設定後端連結，請直接截圖傳給業務員';
+    return;
+  }
+  const btn = document.getElementById('save-btn');
+  const status = document.getElementById('save-status');
+  btn.textContent = '⏳ 儲存中...';
+  btn.disabled = true;
+
+  try {
+    const r = lastResult;
+    if (!r) { calcAll(); }
+    const payload = {
+      method: 'saveWantData',
+      data: {
+        name: G('p-name').value || '',
+        age:    G('p-age').value,    salary: G('p-salary').value,
+        ret:    G('r-ret').value,    life:   G('r-life').value,
+        rep:    G('r-rep').value,    labor:  G('r-labor').value, saved: G('r-saved').value,
+        mRoom:  G('m-room').value,   mMisc:  G('m-misc').value, mCancer: G('m-cancer').value,
+        lCare:  G('l-care').value,   lYrs:   G('l-yrs').value,
+        fMon:   G('f-mon').value,    fYrs:   G('f-yrs').value,
+        fChild: G('f-child').value,  fEdu:   G('f-edu').value,  fDebt: G('f-debt').value,
+        hLife:  G('h-life').value,   hOnceTime: G('h-oncetime').value,
+        hWard:  G('h-ward').value,   hMisc:  G('h-misc').value,
+        hSurg:  G('h-surg').value,   hDisMon: G('h-dismon').value,
+        agentName
+      }
+    };
+
+    const resp = await fetch(GAS_WEBAPP_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const result = await resp.json();
+
+    if (result.success) {
+      btn.textContent = '✅ 已儲存';
+      btn.style.background = '#16a34a';
+      btn.style.color = '#fff';
+      status.textContent = '✅ 已成功儲存！業務員將收到通知，時間：' + result.timestamp;
+    } else {
+      throw new Error(result.message || '儲存失敗');
+    }
+  } catch(err) {
+    btn.textContent = '❌ 儲存失敗';
+    btn.disabled = false;
+    status.textContent = '⚠️ ' + err.message + '，請截圖傳給業務員';
+    console.error(err);
+  }
+}
+
+function copyShareCode() {
+  const code = G('share-code').textContent;
+  const url = window.location.href;
+  const text = '【四金需求分享碼】' + code + '\n連結：' + url;
+  if (navigator.share) {
+    navigator.share({ title: '我的四金保障需求', text, url })
+      .catch(() => navigator.clipboard.writeText(text));
+  } else {
+    navigator.clipboard.writeText(text)
+      .then(() => alert('✅ 已複製分享碼和連結'))
+      .catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('✅ 已複製');
+      });
+  }
+}
+
+// 初始計算
+calcAll();
+</script>
+</body>
+</html>
