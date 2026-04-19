@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<!-- 💡 v2.36 專為 iPad / 手機打造的 PWA (Web App) 標籤 -->
+<!-- PWA 標籤 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="保單智能分析">
 <meta name="theme-color" content="#1a1a2e">
 
-<title>保單智能分析｜總表升級版 v3.2</title>
+<title>保單智能分析｜業務版 v3.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- PDF 解析引擎 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -182,7 +182,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
 .matrix-input:hover { border-color: var(--border); }
 .matrix-input:focus { border-style: solid; border-color: var(--blue); background: #f0f7fb; border-radius: 6px; }
 
-/* 💡 v2.36 雙軌備註區塊 (Needs & Wants) */
+/* 💡 v3.2 雙軌備註區塊 (Needs & Wants) */
 .notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
 .notes-wrap { background: var(--paper); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
 .notes-grid .notes-wrap { margin-bottom: 0; }
@@ -415,7 +415,7 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
 <header>
   <div class="logo">
     <span class="logo-main">保單智能分析</span>
-    <span class="logo-ver">總表升級版 v3.2</span>
+    <span class="logo-ver">業務版 v3.2</span>
   </div>
   <div class="header-right">
     <span class="header-count" id="header-count"></span>
@@ -498,7 +498,7 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
     <div id="share-link-output" style="display:none;margin-top:10px">
       <div style="font-size:10px;color:#a78bfa;margin-bottom:4px">專屬連結（複製後傳給保戶）</div>
       <div style="display:flex;gap:6px;align-items:center">
-        <input type="text" id="share-link-url" readonly
+        <input type="text" id="share-link-url" readonly title="完整連結（複製後傳給保戶）"
           style="flex:1;padding:7px 10px;border:1.5px solid #ddd6fe;border-radius:7px;font-size:11px;font-family:monospace;background:#f5f3ff;color:#6d28d9;outline:none">
         <button onclick="copyShareLink()"
           style="padding:7px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">複製</button>
@@ -717,7 +717,7 @@ function parseInsuranceText(text) {
     isSummaryMode: false 
   };
 
-  // 💡 v2.36 終極一覽表相容擷取引擎 (完美解決日期空白與保費捕捉)
+  // 💡 v3.2 終極一覽表相容擷取引擎 (完美解決日期空白與保費捕捉)
   if (text.includes('保險繳費一覽表') || (!text.includes('保險項目與金額') && !text.includes('給付紀錄') && !text.includes('保單基本資料'))) {
       data.isSummaryMode = true;
       data.notes = '這是一份非標準格式的保單檔案（如：自訂保費繳費一覽表）。\n\n系統已為您盡力提取各險種、期滿日與年繳保費。但由於此份文件缺乏「理賠給付條款」細項（例如：每日病房費 1500 等字眼），因此這些保單【將無法計入】跨保單總表的醫療保障額度中。\n您可以直接檢視下方擷取出的清單。';
@@ -733,7 +733,7 @@ function parseInsuranceText(text) {
 
       const lines = text.split('\n');
       lines.forEach(line => {
-          // 💡 v2.36 真空除白技術：強制把日期內多餘的空白拔除 (解決 107/  9/  2 問題)
+          // 💡 v3.2 真空除白技術：強制把日期內多餘的空白拔除 (解決 107/  9/  2 問題)
           line = line.replace(/(\d{2,3})\s*\/\s*(\d{1,2})\s*\/\s*(\d{1,2})/g, '$1/$2/$3'); 
           line = line.replace(/終\s*身/g, '終身');
           
@@ -1302,7 +1302,7 @@ function renderDashboard() {
       </table>
     </div>
     
-    <!-- 💡 v2.36 雙軌備註區塊：Needs & Wants -->
+    <!-- 💡 v3.2 雙軌備註區塊：Needs & Wants -->
     <div class="notes-grid">
         <div class="notes-wrap">
           <div class="notes-head">🛡️ 綜合診斷與建議 (Needs) <span>✏️ 可點擊編輯</span></div>
@@ -1627,7 +1627,7 @@ function copyResult(id) {
   const d = entry.data;
   
   if (d.isSummaryMode) {
-      let t = '保單清單擷取 v2.36\n' + '='.repeat(40) + '\n\n';
+      let t = '保單清單擷取 v3.2\n' + '='.repeat(40) + '\n\n';
       t += '被保險人：' + d.insuredName + '\n\n';
       d.policies.forEach(p => {
           t += '險種：' + p.name + '\n';
@@ -1638,7 +1638,7 @@ function copyResult(id) {
 
   const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
 
-  let t = '保單智能分析 v2.36 報告\n' + '='.repeat(40) + '\n\n';
+  let t = '保單智能分析 v3.2 報告\n' + '='.repeat(40) + '\n\n';
   t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
   t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
   if (parseNum(d.survivalAmount) > 0) {
@@ -1673,7 +1673,7 @@ function downloadTxt(id) {
   const d = entry.data;
   
   if (d.isSummaryMode) {
-      let t = '保單清單擷取 v2.36\n' + '='.repeat(40) + '\n\n';
+      let t = '保單清單擷取 v3.2\n' + '='.repeat(40) + '\n\n';
       t += '被保險人：' + d.insuredName + '\n\n';
       d.policies.forEach(p => {
           t += '險種：' + p.name + '\n';
@@ -1688,7 +1688,7 @@ function downloadTxt(id) {
 
   const curSym = (d.currency || '').includes('美元') ? 'US$' : ((d.currency || '').includes('澳幣') ? 'AU$' : 'NT$');
 
-  let t = '保單智能分析 v2.36 報告\n' + '='.repeat(40) + '\n\n';
+  let t = '保單智能分析 v3.2 報告\n' + '='.repeat(40) + '\n\n';
   t += '被保險人：' + d.insuredName + '\n保單號碼：' + d.policyNumber + '\n幣別：' + d.currency + '\n';
   t += '自然身故保額：' + curSym + ' ' + formatNum(parseNum(d.naturalDeath)) + '\n意外身故保額：' + curSym + ' ' + formatNum(parseNum(d.accidentDeath)) + '\n';
   if (parseNum(d.survivalAmount) > 0) {
@@ -1911,12 +1911,12 @@ function renderWantPanel() {
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">失能月給付（萬/月）</div>
-            <input type="number" id="wm-dismon" value="0" step="0.5" oninput="applyManualHave()"
+            <input type="number" id="wm-dismon" value="0" step="0.1" oninput="applyManualHave()"
               style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
           <div style="background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:7px 10px">
             <div style="font-size:10px;color:#7c3aed;margin-bottom:3px">失能一次金（萬）</div>
-            <input type="number" id="wm-disone" value="0" step="10" oninput="applyManualHave()"
+            <input type="number" id="wm-disone" value="0" step="0.1" oninput="applyManualHave()"
               style="width:100%;border:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--ink);outline:none;background:transparent">
           </div>
         </div>
@@ -1947,21 +1947,33 @@ function renderWantPanel() {
             <div class="wfg"><label>目前年齡</label><div class="wu"><input class="winp" type="number" id="p-age" value="35" step="1" oninput="wCalc()"><span class="wunit">歲</span></div></div>
             <div class="wfg"><label>預計退休年齡</label><div class="wu"><input class="winp" type="number" id="r-ret" value="65" step="1" oninput="wCalc()"><span class="wunit">歲</span></div></div>
             <div class="wfg"><label>預估活到幾歲 <em>(Want)</em></label>
-              <select class="wsel" id="r-life" onchange="wCalc()">
+              <select class="wsel" id="r-life" onchange="wCustomSel('r-life','r-life-box','r-life-inp',85)">
                 <option value="80">80歲</option><option value="85" selected>85歲</option>
                 <option value="90">90歲</option><option value="95">95歲</option>
+                <option value="custom">自行輸入…</option>
               </select>
+              <div id="r-life-box" style="display:none;margin-top:4px;position:relative">
+                <input type="number" class="winp" id="r-life-inp" placeholder="歲" min="60" max="120" step="1" oninput="wCalc()"
+                  style="width:100%;padding:4px 26px 4px 8px">
+                <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">歲</span>
+              </div>
             </div>
             <div class="wfg"><label>退休所得替代率 <em>(Want)</em></label>
-              <select class="wsel" id="r-rep" onchange="wCalc()">
+              <select class="wsel" id="r-rep" onchange="wCustomSel('r-rep','r-rep-box','r-rep-inp',70)">
                 <option value="0.8">寬裕(80%)</option><option value="0.7" selected>稍省(70%)</option>
                 <option value="0.6">節省(60%)</option><option value="0.5">最低(50%)</option>
+                <option value="custom">自行輸入…</option>
               </select>
+              <div id="r-rep-box" style="display:none;margin-top:4px;position:relative">
+                <input type="number" class="winp" id="r-rep-inp" placeholder="%" min="10" max="100" step="1" oninput="wCalc()"
+                  style="width:100%;padding:4px 26px 4px 8px">
+                <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">%</span>
+              </div>
             </div>
             <div class="wfg"><label>目前月薪（稅前）</label><div class="wu"><input class="winp" type="number" id="p-salary" value="5" step="0.5" oninput="wCalc()"><span class="wunit">萬</span></div></div>
-            <div class="wfg"><label>勞保年金（月領）</label><div class="wu"><input class="winp" type="number" id="r-labor" value="2" step="0.5" oninput="wCalc()"><span class="wunit">萬/月</span></div></div>
+            <div class="wfg"><label>勞保年金（月領）</label><div class="wu"><input class="winp" type="number" id="r-labor" value="2" step="0.1" oninput="wCalc()"><span class="wunit">萬/月</span></div></div>
             <div class="wfg"><label>已準備退休金</label><div class="wu"><input class="winp" type="number" id="r-saved" value="0" step="10" oninput="wCalc()"><span class="wunit">萬</span></div></div>
-            <div class="wfg"><label>保險生存金（年領）</label><div class="wu"><input class="winp" type="number" id="r-surv" value="0" step="1" oninput="wCalc()"><span class="wunit">萬/年</span></div></div>
+            <div class="wfg"><label>保險生存金（年領）</label><div class="wu"><input class="winp" type="number" id="r-surv" value="0" step="0.1" oninput="wCalc()"><span class="wunit">萬/年</span></div></div>
           </div>
           <div class="wcalc" style="margin-top:12px"><h4>退休金試算</h4>
             <div class="wcr"><span class="wlbl">退休後年數</span><span class="wval" id="rs-yrs">—</span></div>
@@ -2021,17 +2033,37 @@ function renderWantPanel() {
                   <div style="display:flex;justify-content:space-between"><span>癌症一次金</span><span id="wph-cancer">—</span></div>
                 </div>
                 <div style="border-top:1px solid #c7d2f8;margin-top:8px;padding-top:8px">
-                  <div style="font-size:10px;color:#1a1a7e;margin-bottom:3px">Want：重大傷病目標</div>
-                  <div style="position:relative;margin-bottom:6px">
-                    <input type="number" id="m-ci-want" value="100" step="10" oninput="wCalc()"
-                      style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                  <div style="font-size:10px;color:#1a1a7e;margin-bottom:3px">Want：重大傷病一次金目標</div>
+                  <div style="margin-bottom:6px">
+                    <select id="m-ci-want" onchange="wCustomSel('m-ci-want','m-ci-box','m-ci-inp',100)"
+                      style="width:100%;padding:4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <option value="50">50萬</option>
+                      <option value="100" selected>100萬</option>
+                      <option value="200">200萬</option>
+                      <option value="300">300萬</option>
+                      <option value="custom">自行輸入…</option>
+                    </select>
+                    <div id="m-ci-box" style="display:none;margin-top:4px;position:relative">
+                      <input type="number" id="m-ci-inp" placeholder="萬" step="10" oninput="wCalc()"
+                        style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                    </div>
                   </div>
                   <div style="font-size:10px;color:#1a1a7e;margin-bottom:3px">Want：癌症一次金目標</div>
-                  <div style="position:relative">
-                    <input type="number" id="m-cancer-want" value="100" step="10" oninput="wCalc()"
-                      style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                  <div>
+                    <select id="m-cancer-want" onchange="wCustomSel('m-cancer-want','m-cancer-box','m-cancer-inp',100)"
+                      style="width:100%;padding:4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <option value="50">50萬</option>
+                      <option value="100" selected>100萬</option>
+                      <option value="200">200萬</option>
+                      <option value="300">300萬</option>
+                      <option value="custom">自行輸入…</option>
+                    </select>
+                    <div id="m-cancer-box" style="display:none;margin-top:4px;position:relative">
+                      <input type="number" id="m-cancer-inp" placeholder="萬" step="10" oninput="wCalc()"
+                        style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #c7d2f8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2046,22 +2078,53 @@ function renderWantPanel() {
                 </div>
                 <div style="border-top:1px solid #b3d4ef;margin-top:8px;padding-top:8px">
                   <div style="font-size:10px;color:#0d5b8e;margin-bottom:3px">Want：目標病房差額</div>
-                  <div style="position:relative;margin-bottom:6px">
-                    <input type="number" id="m-room" value="1500" step="500" oninput="wCalc()"
-                      style="width:100%;padding:4px 36px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">元/日</span>
+                  <div style="margin-bottom:6px">
+                    <select id="m-room" onchange="wCustomSel('m-room','m-room-box','m-room-inp',1500)"
+                      style="width:100%;padding:4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <option value="0">一般病房(0元)</option>
+                      <option value="1000">健保差額 1,000元</option>
+                      <option value="1500" selected>健保差額 1,500元</option>
+                      <option value="2000">健保差額 2,000元</option>
+                      <option value="3000">單人房 3,000元</option>
+                      <option value="custom">自行輸入…</option>
+                    </select>
+                    <div id="m-room-box" style="display:none;margin-top:4px;position:relative">
+                      <input type="number" id="m-room-inp" placeholder="元/日" step="500" oninput="wCalc()"
+                        style="width:100%;padding:4px 36px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">元/日</span>
+                    </div>
                   </div>
-                  <div style="font-size:10px;color:#0d5b8e;margin-bottom:3px">Want：雜費目標</div>
-                  <div style="position:relative;margin-bottom:6px">
-                    <input type="number" id="m-misc" value="30" step="5" oninput="wCalc()"
-                      style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                  <div style="font-size:10px;color:#0d5b8e;margin-bottom:3px">Want：實支雜費限額目標</div>
+                  <div style="margin-bottom:6px">
+                    <select id="m-misc" onchange="wCustomSel('m-misc','m-misc-box','m-misc-inp',30)"
+                      style="width:100%;padding:4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <option value="20">20萬</option>
+                      <option value="30" selected>30萬</option>
+                      <option value="50">50萬</option>
+                      <option value="100">100萬</option>
+                      <option value="custom">自行輸入…</option>
+                    </select>
+                    <div id="m-misc-box" style="display:none;margin-top:4px;position:relative">
+                      <input type="number" id="m-misc-inp" placeholder="萬" step="5" oninput="wCalc()"
+                        style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                    </div>
                   </div>
-                  <div style="font-size:10px;color:#0d5b8e;margin-bottom:3px">Want：手術費目標</div>
-                  <div style="position:relative">
-                    <input type="number" id="m-surg-want" value="20" step="5" oninput="wCalc()"
-                      style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
-                    <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                  <div style="font-size:10px;color:#0d5b8e;margin-bottom:3px">Want：手術費目標額度</div>
+                  <div>
+                    <select id="m-surg-want" onchange="wCustomSel('m-surg-want','m-surg-box','m-surg-inp',20)"
+                      style="width:100%;padding:4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <option value="10">10萬</option>
+                      <option value="20" selected>20萬</option>
+                      <option value="35">35萬</option>
+                      <option value="50">50萬</option>
+                      <option value="custom">自行輸入…</option>
+                    </select>
+                    <div id="m-surg-box" style="display:none;margin-top:4px;position:relative">
+                      <input type="number" id="m-surg-inp" placeholder="萬" step="5" oninput="wCalc()"
+                        style="width:100%;padding:4px 26px 4px 7px;border:1.5px solid #b3d4ef;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;background:#fff">
+                      <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2115,18 +2178,49 @@ function renderWantPanel() {
               <div style="display:flex;justify-content:space-between"><span>重大傷病一次金</span><span id="wl-ci">—</span></div>
             </div>
           </div>
+          <!-- 重大傷病一次金目標（長照前置資金）-->
+          <div class="wfg-grid" style="margin-top:4px;margin-bottom:4px">
+            <div class="wfg"><label>重大傷病一次金目標 <em>(Want)</em></label>
+              <select class="wsel" id="l-ci-want" onchange="wCustomSel('l-ci-want','l-ci-box','l-ci-inp',100)">
+                <option value="50">50萬（基本）</option>
+                <option value="100" selected>100萬（建議）</option>
+                <option value="200">200萬（充裕）</option>
+                <option value="300">300萬（高額）</option>
+                <option value="custom">自行輸入…</option>
+              </select>
+              <div id="l-ci-box" style="display:none;margin-top:4px;position:relative">
+                <input type="number" class="winp" id="l-ci-inp" placeholder="萬" step="10" oninput="wCalc()"
+                  style="width:100%;padding:4px 26px 4px 8px">
+                <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+              </div>
+            </div>
+          </div>
           <div class="wfg-grid" style="margin-top:4px">
             <div class="wfg"><label>照護方式 <em>(Want)</em></label>
-              <select class="wsel" id="l-care" onchange="wCalc()">
-                <option value="1.5">居家照護(≈1.5萬/月)</option><option value="3.0" selected>外籍看護(≈3.0萬/月)</option>
-                <option value="4.5">本國看護(≈4.5萬/月)</option><option value="6.0">安養機構(≈6.0萬/月)</option>
+              <select class="wsel" id="l-care" onchange="wCustomSel('l-care','l-care-box','l-care-inp',3.0)">
+                <option value="1.5">居家照護(≈1.5萬/月)</option>
+                <option value="3.0" selected>外籍看護(≈3.0萬/月)</option>
+                <option value="4.5">本國看護(≈4.5萬/月)</option>
+                <option value="6.0">安養機構(≈6.0萬/月)</option>
+                <option value="custom">自行輸入…</option>
               </select>
+              <div id="l-care-box" style="display:none;margin-top:4px;position:relative">
+                <input type="number" class="winp" id="l-care-inp" placeholder="萬/月" step="0.1" oninput="wCalc()"
+                  style="width:100%;padding:4px 36px 4px 8px">
+                <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬/月</span>
+              </div>
             </div>
             <div class="wfg"><label>預估照護年數 <em>(Want)</em></label>
-              <select class="wsel" id="l-yrs" onchange="wCalc()">
+              <select class="wsel" id="l-yrs" onchange="wCustomSel('l-yrs','l-yrs-box','l-yrs-inp',7)">
                 <option value="5">5年</option><option value="7" selected>7年</option>
                 <option value="10">10年</option><option value="15">15年</option>
+                <option value="custom">自行輸入…</option>
               </select>
+              <div id="l-yrs-box" style="display:none;margin-top:4px;position:relative">
+                <input type="number" class="winp" id="l-yrs-inp" placeholder="年" step="1" oninput="wCalc()"
+                  style="width:100%;padding:4px 26px 4px 8px">
+                <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">年</span>
+              </div>
             </div>
           </div>
           <div class="wcalc" style="margin-top:12px"><h4>長照金試算</h4>
@@ -2153,7 +2247,7 @@ function renderWantPanel() {
         </div>
         <div class="gold-bdy open" id="wbody-family">
           <div class="wfg-grid" style="margin-top:14px">
-            <div class="wfg"><label>家庭月支出 <em>(Want)</em></label><div class="wu"><input class="winp" type="number" id="f-mon" value="5" step="0.5" oninput="wCalc()"><span class="wunit">萬/月</span></div></div>
+            <div class="wfg"><label>家庭月支出 <em>(Want)</em></label><div class="wu"><input class="winp" type="number" id="f-mon" value="5" step="0.1" oninput="wCalc()"><span class="wunit">萬/月</span></div></div>
             <div class="wfg"><label>需保障年數 <em>(Want)</em></label>
               <select class="wsel" id="f-yrs" onchange="wCalc()">
                 <option value="5">5年</option><option value="10" selected>10年</option>
@@ -2167,10 +2261,16 @@ function renderWantPanel() {
               </select>
             </div>
             <div class="wfg"><label>每人教育金目標 <em>(Want)</em></label>
-              <select class="wsel" id="f-edu" onchange="wCalc()">
+              <select class="wsel" id="f-edu" onchange="wCustomSel('f-edu','f-edu-box','f-edu-inp',300)">
                 <option value="100">100萬</option><option value="200">200萬</option>
                 <option value="300" selected>300萬</option><option value="500">500萬</option>
+                <option value="custom">自行輸入…</option>
               </select>
+              <div id="f-edu-box" style="display:none;margin-top:4px;position:relative">
+                <input type="number" class="winp" id="f-edu-inp" placeholder="萬" step="10" oninput="wCalc()"
+                  style="width:100%;padding:4px 26px 4px 8px">
+                <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#888;pointer-events:none">萬</span>
+              </div>
             </div>
           </div>
           <div class="wfg-grid one" style="margin-top:10px">
@@ -2289,6 +2389,27 @@ function wantSyncHave() {
   wCalc();
 }
 
+
+// ── 自訂輸入 helper ──
+function wCustomSel(selId, customBoxId, customInpId, defVal) {
+  const sel = document.getElementById(selId);
+  const box = document.getElementById(customBoxId);
+  const inp = document.getElementById(customInpId);
+  if (!sel || !box) return;
+  const isCustom = sel.value === 'custom';
+  box.style.display = isCustom ? 'block' : 'none';
+  if (isCustom && inp && !inp.value) inp.value = defVal || '';
+  wCalc();
+}
+function wGetCustomVal(selId, customInpId, fallback) {
+  const sel = document.getElementById(selId);
+  if (!sel) return fallback || 0;
+  if (sel.value === 'custom') {
+    const inp = document.getElementById(customInpId);
+    return inp ? (parseFloat(inp.value) || fallback || 0) : (fallback || 0);
+  }
+  return parseFloat(sel.value) || fallback || 0;
+}
 // ── wCalc：主工具四金計算（與保戶版相同邏輯）──
 function wCalc() {
   const db  = buildDashboardData();
@@ -2338,8 +2459,8 @@ function wCalc() {
     const age    = gV('p-age') || 35;
     const salary = gV('p-salary') || 5;
     const ret    = gV('r-ret') || 65;
-    const life   = gS('r-life') || 85;
-    const rep    = gS('r-rep') || 0.7;
+    const life   = wGetCustomVal('r-life','r-life-inp',85);
+    const repRaw = wGetCustomVal('r-rep','r-rep-inp',70); const rep = repRaw > 1 ? repRaw/100 : repRaw;
     const labor  = gV('r-labor');
     const saved  = gV('r-saved');
     const surv   = gV('r-surv');
@@ -2358,11 +2479,11 @@ function wCalc() {
   // ── 醫療金 ──
   let mGap = 0;
   if (wIsPlan('medical')) {
-    const wCi    = gV('m-ci-want')     || 100;
-    const wCancer= gV('m-cancer-want') || 100;
-    const wRoom  = gV('m-room')        || 1500;
-    const wMisc  = gV('m-misc')        || 30;
-    const wSurg  = gV('m-surg-want')   || 20;
+    const wCi    = wGetCustomVal('m-ci-want','m-ci-inp',100);
+    const wCancer= wGetCustomVal('m-cancer-want','m-cancer-inp',100);
+    const wRoom  = wGetCustomVal('m-room','m-room-inp',1500);
+    const wMisc  = wGetCustomVal('m-misc','m-misc-inp',30);
+    const wSurg  = wGetCustomVal('m-surg-want','m-surg-inp',20);
     const gRoom  = Math.max(0, wRoom - hWard);
     const gCi    = Math.max(0, wCi    - hCi);
     const gCancer= Math.max(0, wCancer - hCancer);
@@ -2388,10 +2509,11 @@ function wCalc() {
   // ── 長照金（含失能月給付、失能一次金、重大傷病一次金）──
   let lGap = 0;
   if (wIsPlan('ltc')) {
-    const lCare = gS('l-care') || 3.0;
-    const lYrs  = gS('l-yrs')  || 7;
+    const lCare = wGetCustomVal('l-care','l-care-inp',3.0);
+    const lYrs  = wGetCustomVal('l-yrs','l-yrs-inp',7);
     const lNeed = lCare * 12 * lYrs;
     const lMonHave = hDisMon * 12 * lYrs;
+    const wLciWant = wGetCustomVal('l-ci-want','l-ci-inp',100);
     const lOneHave = hDisOne + hCi;
     lGap = Math.max(0, lNeed - lMonHave - lOneHave);
     // 更新 Have 顯示
@@ -2412,7 +2534,7 @@ function wCalc() {
     const fMon  = gV('f-mon');
     const fYrs  = gS('f-yrs') || 10;
     const fChild= gS('f-child');
-    const fEdu  = gS('f-edu') || 300;
+    const fEdu  = wGetCustomVal('f-edu','f-edu-inp',300);
     const fDebt = gV('f-debt');
     const fLC   = fMon * 12 * fYrs;
     const fET   = fEdu * fChild;
@@ -2680,7 +2802,10 @@ function generateShareLink() {
   const outputEl = document.getElementById('share-link-output');
   const urlEl    = document.getElementById('share-link-url');
   urlEl.value    = url;
+  urlEl.title    = url;
   outputEl.style.display = 'block';
+  // 自動選取方便複製
+  setTimeout(() => { urlEl.select(); urlEl.setSelectionRange(0, 99999); }, 50);
 }
 
 function copyShareLink() {
