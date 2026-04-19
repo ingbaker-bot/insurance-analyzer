@@ -423,7 +423,7 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 // ★ 部署後在這裡填入 GAS Web App URL ★
 // 格式：https://script.google.com/macros/s/XXXXXX/exec
 // ══════════════════════════════════════════
-const GAS_WEBAPP_URL = 'const GAS_WEBAPP_URL =';  // ← 填這裡
+const GAS_WEBAPP_URL = '';  // ← 填這裡
 
 // 從 URL 讀取業務員名稱
 const urlParams = new URLSearchParams(window.location.search);
@@ -585,7 +585,7 @@ function encodeData(data) {
   return displayCode;
 }
 
-async async function saveToCloud() {
+async function saveToCloud() {
   if (!GAS_WEBAPP_URL) {
     document.getElementById('save-status').textContent = '⚠️ 業務員尚未設定後端連結，請直接截圖傳給業務員';
     return;
