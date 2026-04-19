@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>保單繳費記錄表</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #1a1a2e;
+  --ink2:   #3a3a5c;
+  --ink3:   #7878a0;
+  --bg:     #f7f5f0;
+  --surface:#ffffff;
+  --paper:  #f2efe8;
+  --border: #e0dcd0;
+  --gold:   #c9a84c;
+  --gold2:  #e8d49a;
+  --red:    #dc2626;
+  --green:  #16a34a;
+  --blue:   #1d4ed8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* ── 頁首 ── */
+.app-hdr{background:var(--ink);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.app-hdr-title{color:var(--gold);font-size:18px;font-weight:700;letter-spacing:1px}
+.app-hdr-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:2px}
+.hdr-btns{display:flex;gap:8px}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;white-space:nowrap}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.8)}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn-danger{background:#fef2f2;border:1px solid #fca5a5;color:#dc2626}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:6px}
+
+/* ── 匯入區 ── */
+.import-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.import-label{font-size:12px;color:var(--ink3);font-weight:500}
+.import-hint{font-size:11px;color:var(--ink3);margin-left:auto}
+
+/* ── 主體 ── */
+.main{padding:16px 20px;max-width:1100px;margin:0 auto}
+
+/* ── 統計列 ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
+.stat-lbl{font-size:10px;color:var(--ink3);letter-spacing:.5px;text-transform:uppercase}
+.stat-val{font-size:22px;font-weight:700;color:var(--ink);margin-top:3px;font-family:'DM Mono',monospace}
+.stat-val.gold{color:var(--gold)}
+.stat-sub{font-size:10px;color:var(--ink3);margin-top:2px}
+
+/* ── 工具列 ── */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar-l{display:flex;align-items:center;gap:8px;flex:1}
+.search-inp{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:var(--surface);min-width:180px}
+.search-inp:focus{border-color:var(--gold)}
+.filter-sel{padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;outline:none;background:var(--surface);cursor:pointer}
+
+/* ── 保單群組 ── */
+.policy-group{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden}
+.group-hdr{padding:10px 16px;background:var(--paper);display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid var(--border)}
+.group-hdr:hover{background:#ede8de}
+.group-toggle{font-size:12px;color:var(--ink3);transition:transform .2s}
+.group-toggle.open{transform:rotate(180deg)}
+.group-name{font-weight:600;font-size:14px}
+.group-pno{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace}
+.group-badges{margin-left:auto;display:flex;gap:6px;align-items:center}
+.badge{font-size:10px;padding:2px 8px;border-radius:12px;font-weight:500}
+.badge-total{background:#fefce8;color:#854d0e;border:1px solid #fde68a}
+.badge-count{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+
+/* ── 繳費項目列表 ── */
+.items-table{width:100%;border-collapse:collapse}
+.items-table th{font-size:10px;color:var(--ink3);text-align:left;padding:8px 14px;background:#fafaf8;border-bottom:1px solid var(--border);letter-spacing:.3px;font-weight:500}
+.items-table td{padding:8px 14px;border-bottom:1px solid #f5f3ef;vertical-align:middle;font-size:12px}
+.items-table tr:last-child td{border-bottom:none}
+.items-table tr:hover td{background:#fafaf8}
+.col-name{min-width:160px}
+.col-freq{width:80px}
+.col-date{width:80px}
+.col-amt{width:100px;text-align:right;font-family:'DM Mono',monospace;font-weight:500}
+.col-annual{width:110px;text-align:right;font-family:'DM Mono',monospace;color:var(--gold);font-weight:600}
+.col-status{width:80px;text-align:center}
+.col-actions{width:80px;text-align:right}
+
+/* 狀態 badges */
+.status-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:12px;font-weight:500}
+.status-active{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.status-pending{background:#fffbeb;color:#b45309;border:1px solid #fde68a}
+.status-ended{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1}
+
+/* ── 新增列表單 ── */
+.add-row td{padding:6px 8px;background:#f8f9ff;border-top:2px solid var(--blue)}
+.add-inp{width:100%;padding:5px 8px;border:1.5px solid #bfdbfe;border-radius:6px;font-size:12px;font-family:inherit;outline:none;background:#fff}
+.add-inp:focus{border-color:var(--blue)}
+.add-sel{width:100%;padding:5px 6px;border:1.5px solid #bfdbfe;border-radius:6px;font-size:12px;font-family:inherit;outline:none;background:#fff;cursor:pointer}
+
+/* ── 空狀態 ── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--ink3)}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.empty-title{font-size:15px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.empty-sub{font-size:12px;line-height:1.7}
+
+/* ── 手動新增表單 Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:24px;width:min(500px,92vw);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.form-full{grid-column:1/-1}
+.form-lbl{font-size:11px;color:var(--ink3);margin-bottom:4px;font-weight:500}
+.form-inp{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.form-inp:focus{border-color:var(--gold)}
+.form-sel{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;cursor:pointer}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-primary{background:var(--ink);color:#fff;padding:9px 20px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-cancel{background:var(--paper);color:var(--ink);padding:9px 16px;border-radius:8px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-family:inherit}
+
+/* ── OCR 上傳 ── */
+.ocr-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:.2s;background:var(--paper);margin-bottom:16px}
+.ocr-area:hover{border-color:var(--gold);background:#fdf8ec}
+.ocr-area.drag{border-color:var(--gold);background:#fdf8ec}
+.ocr-hint{font-size:12px;color:var(--ink3);margin-top:6px}
+
+/* ── 列印 ── */
+@media print {
+  @page{size:A4 landscape;margin:12mm 14mm}
+  .app-hdr,.import-bar,.toolbar,.hdr-btns,.col-actions,.add-row,button{display:none!important}
+  .main{padding:0;max-width:100%}
+  body{background:#fff}
+  .policy-group{break-inside:avoid;border:1px solid #ccc}
+  .group-hdr{background:#f5f5f5}
+}
+</style>
+</head>
+<body>
+
+<!-- 頁首 -->
+<div class="app-hdr">
+  <div>
+    <div class="app-hdr-title">💳 保單繳費記錄表</div>
+    <div class="app-hdr-sub">記錄每張保單的繳費方式與日期</div>
+  </div>
+  <div class="hdr-btns">
+    <button class="btn btn-ghost btn-sm" onclick="importFromAdmin()">📥 從主工具匯入</button>
+    <button class="btn btn-ghost btn-sm" onclick="showAddModal()">＋ 手動新增</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ 匯出 CSV</button>
+    <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 列印</button>
+    <button class="btn btn-ghost btn-sm" onclick="saveData()">💾 儲存</button>
+  </div>
+</div>
+
+<!-- 匯入提示列 -->
+<div class="import-bar" id="import-bar" style="display:none">
+  <span style="font-size:14px">✅</span>
+  <span class="import-label" id="import-msg"></span>
+  <button class="btn btn-ghost btn-sm" onclick="closeImportBar()">×</button>
+</div>
+
+<!-- 主體 -->
+<div class="main">
+
+  <!-- 統計列 -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-lbl">保單張數</div>
+      <div class="stat-val" id="stat-count">0</div>
+      <div class="stat-sub">張有效保單</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">年繳總保費</div>
+      <div class="stat-val gold" id="stat-annual">$0</div>
+      <div class="stat-sub">所有保單合計</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">月均保費</div>
+      <div class="stat-val" id="stat-monthly">$0</div>
+      <div class="stat-sub">年繳 ÷ 12</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">最近繳費</div>
+      <div class="stat-val" id="stat-next" style="font-size:15px">—</div>
+      <div class="stat-sub">下一筆</div>
+    </div>
+  </div>
+
+  <!-- 工具列 -->
+  <div class="toolbar">
+    <div class="toolbar-l">
+      <input class="search-inp" type="text" id="search-inp" placeholder="🔍 搜尋保單/被保人" oninput="renderAll()">
+      <select class="filter-sel" id="filter-freq" onchange="renderAll()">
+        <option value="">全部頻率</option>
+        <option value="monthly">月繳</option>
+        <option value="quarterly">季繳</option>
+        <option value="semi">半年繳</option>
+        <option value="annual">年繳</option>
+      </select>
+      <select class="filter-sel" id="filter-status" onchange="renderAll()">
+        <option value="">全部狀態</option>
+        <option value="active">有效</option>
+        <option value="pending">待確認</option>
+        <option value="ended">已停繳</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="expandAll()">全展開</button>
+    <button class="btn btn-ghost btn-sm" onclick="collapseAll()">全收合</button>
+  </div>
+
+  <!-- 保單清單 -->
+  <div id="policy-list"></div>
+
+</div>
+
+<!-- 手動新增 Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">➕ 新增繳費記錄</div>
+    <div class="form-grid">
+      <div class="form-full">
+        <div class="form-lbl">被保險人姓名</div>
+        <input class="form-inp" id="f-insured" placeholder="例：李丞敏">
+      </div>
+      <div>
+        <div class="form-lbl">保單號碼</div>
+        <input class="form-inp" id="f-pno" placeholder="例：Q122136576">
+      </div>
+      <div>
+        <div class="form-lbl">險種名稱</div>
+        <input class="form-inp" id="f-name" placeholder="例：住院醫療險">
+      </div>
+      <div>
+        <div class="form-lbl">繳費方式</div>
+        <select class="form-sel" id="f-freq">
+          <option value="annual">年繳</option>
+          <option value="semi">半年繳</option>
+          <option value="quarterly">季繳</option>
+          <option value="monthly">月繳</option>
+        </select>
+      </div>
+      <div>
+        <div class="form-lbl">繳費月/日（如 4/21）</div>
+        <input class="form-inp" id="f-date" placeholder="04/21">
+      </div>
+      <div>
+        <div class="form-lbl">每次繳費金額（元）</div>
+        <input class="form-inp" type="number" id="f-amt" placeholder="17000">
+      </div>
+      <div>
+        <div class="form-lbl">繳費期滿年份</div>
+        <input class="form-inp" id="f-endyr" placeholder="例：2035 或終身">
+      </div>
+      <div>
+        <div class="form-lbl">狀態</div>
+        <select class="form-sel" id="f-status">
+          <option value="active">有效</option>
+          <option value="pending">待確認</option>
+          <option value="ended">已停繳</option>
+        </select>
+      </div>
+      <div class="form-full">
+        <div class="form-lbl">備註</div>
+        <input class="form-inp" id="f-notes" placeholder="任何備註">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-primary" onclick="addRecord()">新增</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// 資料結構：
+// records = [
+//   { id, insured, pno, name, freq, date, amt, endyr, status, notes, source }
+// ]
+// groups = { insured+pno: [records] }
+// ══════════════════════════════════════════
+
+let records = [];
+let collapsed = {};  // groupKey → bool
+let editingId = null;
+
+const FREQ_LABEL = { monthly:'月繳', quarterly:'季繳', semi:'半年繳', annual:'年繳' };
+const FREQ_MULT  = { monthly:12, quarterly:4, semi:2, annual:1 };
+const STATUS_LABEL = { active:'有效', pending:'待確認', ended:'已停繳' };
+const STATUS_CLASS = { active:'status-active', pending:'status-pending', ended:'status-ended' };
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function fmtAmt(v) { return Number(v||0).toLocaleString('zh-TW'); }
+function annualAmt(rec) {
+  const mult = FREQ_MULT[rec.freq] || 1;
+  return (parseFloat(rec.amt)||0) * mult;
+}
+
+// ── 載入/儲存 ──
+function saveData() {
+  try {
+    localStorage.setItem('payment_records_v1', JSON.stringify(records));
+    showImportMsg('💾 已儲存 ' + records.length + ' 筆記錄');
+  } catch(e) { alert('儲存失敗：' + e.message); }
+}
+function loadData() {
+  try {
+    const raw = localStorage.getItem('payment_records_v1');
+    if (raw) records = JSON.parse(raw);
+  } catch(e) { records = []; }
+}
+
+// ── 從主工具 (admin.html) 匯入 ──
+// 主工具用 postMessage 傳資料，或讀取 localStorage 的存檔 JSON
+function importFromAdmin() {
+  // 方法1：嘗試讀取主工具 saveProject 存的 localStorage key
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('insurance_project'));
+  if (keys.length) {
+    const latest = keys.sort().reverse()[0];
+    try {
+      const proj = JSON.parse(localStorage.getItem(latest));
+      importFromProject(proj);
+      return;
+    } catch(e) {}
+  }
+
+  // 方法2：提示上傳 JSON 存檔
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      const proj = JSON.parse(text);
+      importFromProject(proj);
+    } catch(err) {
+      alert('無法解析 JSON 檔案：' + err.message);
+    }
+  };
+  inp.click();
+}
+
+function importFromProject(proj) {
+  if (!proj || !proj.files) { alert('格式不符，請確認是保單分析的存檔 JSON'); return; }
+  let added = 0, skipped = 0;
+  proj.files.forEach(f => {
+    if (!f.data) return;
+    const insured = f.data.insuredName || f.name || '未知';
+    const pno     = f.data.policyNumber || '';
+    // 檢查是否已有此被保人+保單號碼的記錄
+    const existing = records.filter(r => r.insured === insured && r.pno === pno);
+    // 從 f.data.policies 匯入各險種
+    if (f.data.policies && f.data.policies.length) {
+      f.data.policies.forEach(pol => {
+        const alreadyHas = existing.some(r => r.name === pol.name);
+        if (alreadyHas) { skipped++; return; }
+        // 解析繳費期滿
+        const endyr = pol.paymentEnd || '';
+        // 解析保費（試從 pol.premium 取）
+        let amt = 0;
+        if (pol.premium) {
+          const m = String(pol.premium).replace(/,/g,'').match(/\d+/);
+          if (m) amt = parseInt(m[0]);
+        }
+        records.push({
+          id: uid(), insured, pno,
+          name:   pol.name || '（未命名）',
+          freq:   'annual',   // 預設年繳，讓業務員手動調整
+          date:   '',
+          amt:    amt,
+          endyr:  endyr,
+          status: pol.status === '有效' ? 'active' : 'pending',
+          notes:  pol.status === '參考' ? '⚠️ 從保費一覽表匯入，請確認繳費方式' : '',
+          source: 'import'
+        });
+        added++;
+      });
+    } else {
+      // 沒有 policies 細項，建一筆空白記錄
+      const alreadyHas = existing.length > 0;
+      if (!alreadyHas) {
+        records.push({
+          id: uid(), insured, pno,
+          name: '（請補充險種名稱）',
+          freq: 'annual', date: '', amt: 0,
+          endyr: '', status: 'pending', notes: '從主工具匯入，請補充繳費資訊',
+          source: 'import'
+        });
+        added++;
+      } else { skipped++; }
+    }
+  });
+  renderAll(); updateStats(); saveData();
+  showImportMsg(`✅ 已匯入 ${added} 筆，略過重複 ${skipped} 筆`);
+}
+
+// ── 渲染 ──
+function getGroups(filteredRecs) {
+  const groups = {};
+  filteredRecs.forEach(r => {
+    const key = (r.insured||'未知') + '||' + (r.pno||'');
+    if (!groups[key]) groups[key] = { insured: r.insured, pno: r.pno, recs: [] };
+    groups[key].recs.push(r);
+  });
+  return groups;
+}
+
+function renderAll() {
+  const search = (document.getElementById('search-inp').value||'').toLowerCase();
+  const freqF  = document.getElementById('filter-freq').value;
+  const statF  = document.getElementById('filter-status').value;
+
+  let filtered = records.filter(r => {
+    const matchSearch = !search ||
+      (r.insured||'').toLowerCase().includes(search) ||
+      (r.pno||'').toLowerCase().includes(search) ||
+      (r.name||'').toLowerCase().includes(search);
+    const matchFreq = !freqF || r.freq === freqF;
+    const matchStat = !statF || r.status === statF;
+    return matchSearch && matchFreq && matchStat;
+  });
+
+  const groups = getGroups(filtered);
+  const container = document.getElementById('policy-list');
+
+  if (!Object.keys(groups).length) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">${records.length ? '找不到符合條件的記錄' : '尚無繳費記錄'}</div>
+      <div class="empty-sub">${records.length ? '調整搜尋條件' :
+        '點右上角「從主工具匯入」可自動帶入保單資料<br>或點「手動新增」逐筆輸入'}</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = Object.entries(groups).map(([key, g]) => {
+    const isOpen = !collapsed[key];
+    const totalAnnual = g.recs.reduce((s,r) => s + (r.status!=='ended' ? annualAmt(r) : 0), 0);
+    return `
+    <div class="policy-group">
+      <div class="group-hdr" onclick="toggleGroup('${key}')">
+        <span class="group-toggle ${isOpen?'open':''}">▼</span>
+        <span class="group-name">👤 ${g.insured || '未知被保人'}</span>
+        <span class="group-pno">${g.pno ? '保單：'+g.pno : ''}</span>
+        <div class="group-badges">
+          <span class="badge badge-count">${g.recs.length} 筆</span>
+          <span class="badge badge-total">年繳 $${fmtAmt(totalAnnual)}</span>
+          <button class="btn btn-sm" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe"
+            onclick="event.stopPropagation();showAddModalFor('${g.insured}','${g.pno}')">＋ 新增</button>
+        </div>
+      </div>
+      ${isOpen ? `
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-name">險種名稱</th>
+            <th class="col-freq">繳費方式</th>
+            <th class="col-date">繳費月/日</th>
+            <th class="col-amt">每次金額</th>
+            <th class="col-annual">年繳金額</th>
+            <th class="col-status">狀態</th>
+            <th class="col-actions">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${g.recs.map(r => renderRow(r)).join('')}
+        </tbody>
+      </table>` : ''}
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function renderRow(r) {
+  const annual = r.status !== 'ended' ? annualAmt(r) : 0;
+  return `<tr id="row-${r.id}">
+    <td class="col-name">
+      <div style="font-weight:500">${r.name || '—'}</div>
+      ${r.endyr ? `<div style="font-size:10px;color:var(--ink3)">繳至 ${r.endyr}</div>` : ''}
+      ${r.notes ? `<div style="font-size:10px;color:#b45309;margin-top:1px">${r.notes}</div>` : ''}
+    </td>
+    <td class="col-freq">
+      <select style="border:1px solid var(--border);border-radius:5px;font-size:11px;padding:2px 4px;background:#fff;cursor:pointer"
+        onchange="updateField('${r.id}','freq',this.value)">
+        ${Object.entries(FREQ_LABEL).map(([v,l]) =>
+          `<option value="${v}" ${r.freq===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </td>
+    <td class="col-date">
+      <input type="text" value="${r.date||''}" placeholder="MM/DD"
+        style="width:70px;border:1px solid var(--border);border-radius:5px;font-size:11px;padding:3px 6px;font-family:'DM Mono',monospace"
+        onchange="updateField('${r.id}','date',this.value)">
+    </td>
+    <td class="col-amt">
+      <input type="number" value="${r.amt||''}" placeholder="0"
+        style="width:90px;border:1px solid var(--border);border-radius:5px;font-size:11px;padding:3px 6px;text-align:right;font-family:'DM Mono',monospace"
+        onchange="updateField('${r.id}','amt',this.value)">
+    </td>
+    <td class="col-annual" style="color:${annual>0?'var(--gold)':'var(--ink3)'}">
+      ${annual > 0 ? '$' + fmtAmt(annual) : '—'}
+    </td>
+    <td class="col-status">
+      <select style="border:1px solid var(--border);border-radius:5px;font-size:10px;padding:2px 4px;background:#fff;cursor:pointer"
+        onchange="updateField('${r.id}','status',this.value)">
+        ${Object.entries(STATUS_LABEL).map(([v,l]) =>
+          `<option value="${v}" ${r.status===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </td>
+    <td class="col-actions" style="white-space:nowrap">
+      <button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}')">刪除</button>
+    </td>
+  </tr>`;
+}
+
+// ── CRUD ──
+function updateField(id, field, value) {
+  const rec = records.find(r => r.id === id);
+  if (!rec) return;
+  rec[field] = value;
+  renderAll(); saveData();
+}
+
+function deleteRecord(id) {
+  if (!confirm('確定要刪除這筆記錄？')) return;
+  records = records.filter(r => r.id !== id);
+  renderAll(); saveData();
+}
+
+function addRecord() {
+  const insured = document.getElementById('f-insured').value.trim();
+  const pno     = document.getElementById('f-pno').value.trim();
+  const name    = document.getElementById('f-name').value.trim();
+  if (!insured || !name) { alert('請填入被保險人和險種名稱'); return; }
+  records.push({
+    id: uid(), insured, pno,
+    name,
+    freq:   document.getElementById('f-freq').value,
+    date:   document.getElementById('f-date').value.trim(),
+    amt:    parseFloat(document.getElementById('f-amt').value)||0,
+    endyr:  document.getElementById('f-endyr').value.trim(),
+    status: document.getElementById('f-status').value,
+    notes:  document.getElementById('f-notes').value.trim(),
+    source: 'manual'
+  });
+  closeModal(); renderAll(); saveData();
+}
+
+// ── Modal ──
+function showAddModal() {
+  editingId = null;
+  ['f-insured','f-pno','f-name','f-date','f-amt','f-endyr','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('f-freq').value = 'annual';
+  document.getElementById('f-status').value = 'active';
+  document.getElementById('modal-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('f-insured').focus(), 100);
+}
+
+function showAddModalFor(insured, pno) {
+  showAddModal();
+  document.getElementById('f-insured').value = insured;
+  document.getElementById('f-pno').value = pno;
+  setTimeout(() => document.getElementById('f-name').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+// 按 ESC 關 modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── 群組展開/收合 ──
+function toggleGroup(key) {
+  collapsed[key] = !collapsed[key];
+  renderAll();
+}
+function expandAll()   { collapsed = {}; renderAll(); }
+function collapseAll() {
+  const groups = getGroups(records);
+  Object.keys(groups).forEach(k => collapsed[k] = true);
+  renderAll();
+}
+
+// ── 統計 ──
+function updateStats() {
+  const active = records.filter(r => r.status !== 'ended');
+  const annual = active.reduce((s,r) => s + annualAmt(r), 0);
+  document.getElementById('stat-count').textContent = active.length;
+  document.getElementById('stat-annual').textContent = '$' + fmtAmt(annual);
+  document.getElementById('stat-monthly').textContent = '$' + fmtAmt(Math.round(annual/12));
+
+  // 下一筆繳費（找最近的 MM/DD）
+  const today = new Date();
+  const withDate = records.filter(r => r.status === 'active' && r.date && r.date.includes('/'));
+  if (withDate.length) {
+    const upcoming = withDate.map(r => {
+      const parts = r.date.split('/');
+      const m = parseInt(parts[0]), d = parseInt(parts[1]);
+      let dt = new Date(today.getFullYear(), m-1, d);
+      if (dt < today) dt = new Date(today.getFullYear()+1, m-1, d);
+      return { r, dt };
+    }).sort((a,b) => a.dt - b.dt);
+    if (upcoming.length) {
+      const next = upcoming[0];
+      const mm = String(next.dt.getMonth()+1).padStart(2,'0');
+      const dd = String(next.dt.getDate()).padStart(2,'0');
+      document.getElementById('stat-next').textContent = mm + '/' + dd;
+      document.getElementById('stat-next').title = next.r.insured + ' · ' + next.r.name;
+    }
+  } else {
+    document.getElementById('stat-next').textContent = '—';
+  }
+}
+
+// ── 匯出 CSV ──
+function exportCSV() {
+  const rows = [['被保險人','保單號碼','險種名稱','繳費方式','繳費月日','每次金額','年繳金額','繳費期滿','狀態','備註']];
+  records.forEach(r => rows.push([
+    r.insured, r.pno, r.name, FREQ_LABEL[r.freq]||r.freq,
+    r.date, r.amt, annualAmt(r), r.endyr, STATUS_LABEL[r.status]||r.status, r.notes
+  ]));
+  const csv = rows.map(r => r.map(c => '"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '保單繳費記錄_' + new Date().toLocaleDateString('zh-TW').replace(/\//g,'-') + '.csv';
+  a.click();
+}
+
+// ── 提示列 ──
+function showImportMsg(msg) {
+  document.getElementById('import-msg').textContent = msg;
+  const bar = document.getElementById('import-bar');
+  bar.style.display = 'flex';
+  setTimeout(() => bar.style.display = 'none', 4000);
+}
+function closeImportBar() { document.getElementById('import-bar').style.display = 'none'; }
+
+// ── 初始化 ──
+loadData();
+renderAll();
+
+// 監聽主工具傳來的 postMessage（如果在同一個視窗群組）
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'insurance_project') {
+    importFromProject(e.data.project);
+  }
+});
+</script>
+</body>
+</html>
