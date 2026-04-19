@@ -410,22 +410,19 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
     <span class="res-tot-val" id="res-tot">—萬</span>
   </div>
 
-  <!-- 操作按鈕 -->
-  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
-    <button onclick="window.print()" style="flex:1;min-width:120px;padding:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+  <!-- 操作按鈕：一鍵列印＋通知業務員 -->
+  <div style="margin-top:14px">
+    <button onclick="printAndNotify()" id="print-btn"
+      style="width:100%;padding:13px;background:#c9a84c;border:none;border-radius:10px;color:#1a1a2e;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.5px">
       🖨️ 列印 / 存 PDF
     </button>
-    <button onclick="saveToCloud()" id="save-btn" style="flex:1;min-width:120px;padding:10px;background:#c9a84c;border:none;border-radius:8px;color:#1a1a2e;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-      ☁️ 儲存到業務員系統
-    </button>
   </div>
-  <div id="save-status" style="margin-top:8px;font-size:11px;text-align:center;color:rgba(255,255,255,.7);min-height:18px"></div>
+  <div id="notify-status" style="margin-top:10px;font-size:12px;text-align:center;min-height:20px;color:rgba(255,255,255,.8)"></div>
 
   <div class="share-box">
     <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px">📋 截圖後傳給業務員</div>
     <div class="share-hint" style="font-size:12px;line-height:1.8">
-      點「列印 / 存 PDF」可以儲存一份在手機<br>
-      點「儲存到業務員系統」資料會自動送給業務員<br>
+      按下「列印 / 存 PDF」會同時通知業務員並開啟列印視窗<br>
       業務員收到 Email 通知後會聯絡您
     </div>
   </div>
@@ -438,7 +435,7 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 // ★ 部署後在這裡填入 GAS Web App URL ★
 // 格式：https://script.google.com/macros/s/XXXXXX/exec
 // ══════════════════════════════════════════
-const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzuWlmS_93RAOuHkixi711ZkXF7JzDiIB-Noco9UDSf-8GbUEnd4l46KATZKH7Mbxnn/exec';  // ← 填這裡
+const GAS_WEBAPP_URL = '';  // ← 填這裡
 
 // 從 URL 讀取業務員名稱
 const urlParams = new URLSearchParams(window.location.search);
@@ -599,61 +596,70 @@ function encodeData(data) {
   return displayCode;
 }
 
-async function saveToCloud() {
-  if (!GAS_WEBAPP_URL) {
-    document.getElementById('save-status').textContent = '⚠️ 業務員尚未設定後端連結，請直接截圖傳給業務員';
-    return;
-  }
-  const btn = document.getElementById('save-btn');
-  const status = document.getElementById('save-status');
-  btn.textContent = '⏳ 儲存中...';
-  btn.disabled = true;
+async function printAndNotify() {
+  const btn = document.getElementById('print-btn');
+  const statusEl = document.getElementById('notify-status');
 
-  try {
-    const r = lastResult;
-    if (!r) { calcAll(); }
-    const payload = {
-      method: 'saveWantData',
-      data: {
-        name: G('p-name').value || '',
-        age:    G('p-age').value,    salary: G('p-salary').value,
-        ret:    G('r-ret').value,    life:   G('r-life').value,
-        rep:    (G('r-rep').value === 'custom' ? (parseFloat(G('r-rep-inp').value)/100||0.7) : (parseFloat(G('r-rep').value)||0.7)),
-        labor:  G('r-labor').value, saved: G('r-saved').value, surv: G('r-surv').value,
-        mRoom:  G('m-room').value,   mMisc:  G('m-misc').value,
-        mCiWant: G('m-ci-want')?.value||'100', mCancerWant: G('m-cancer-want')?.value||'100',
-        mSurgWant: G('m-surg-want')?.value||'20',
-        lCare:  G('l-care').value,   lYrs:   G('l-yrs').value,
-        fMon:   G('f-mon').value,    fYrs:   G('f-yrs').value,
-        fChild: G('f-child').value,  fEdu:   G('f-edu').value,  fDebt: G('f-debt').value,
-        hLife:  G('h-life').value,   hOnceTime: G('h-oncetime').value,
-        hWard:  G('h-ward').value,   hMisc:  G('h-misc').value,
-        hSurg:  G('h-surg').value,   hDisMon: G('h-dismon').value,
-        agentName
+  // 先送通知給業務員（背景執行，不等待）
+  if (GAS_WEBAPP_URL) {
+    btn.textContent = '⏳ 通知業務員中…';
+    btn.disabled = true;
+    try {
+      const r = lastResult || {};
+      const payload = {
+        method: 'saveWantData',
+        data: {
+          name:    G('p-name').value || '',
+          age:     G('p-age').value,    salary: G('p-salary').value,
+          ret:     G('r-ret').value,    life:   G('r-life').value,
+          rep:     (G('r-rep').value === 'custom' ? (parseFloat(G('r-rep-inp').value)/100||0.7) : (parseFloat(G('r-rep').value)||0.7)),
+          labor:   G('r-labor').value,  saved:  G('r-saved').value, surv: G('r-surv').value,
+          mRoom:   G('m-room').value,   mMisc:  G('m-misc').value,
+          mCiWant: G('m-ci-want')?.value||'100', mCancerWant: G('m-cancer-want')?.value||'100',
+          mSurgWant: G('m-surg-want')?.value||'20',
+          lCare:   G('l-care').value,   lYrs:   G('l-yrs').value,
+          lCiWant: G('l-ci-want')?.value||'100',
+          fMon:    G('f-mon').value,    fYrs:   G('f-yrs').value,
+          fChild:  G('f-child').value,  fEdu:   G('f-edu').value,  fDebt: G('f-debt').value,
+          hLife:   G('h-life').value,   hOnceTime: G('h-oncetime').value,
+          hWard:   G('h-ward').value,   hMisc:  G('h-misc').value,
+          hSurg:   G('h-surg').value,   hDisMon: G('h-dismon').value,
+          agentName
+        }
+      };
+
+      const resp = await fetch(GAS_WEBAPP_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      const result = await resp.json();
+
+      if (result.success) {
+        // 取業務員名稱顯示（去除 URL 編碼）
+        const agentDisplay = decodeURIComponent(agentName || '業務員');
+        const ts = result.timestamp || new Date().toLocaleString('zh-TW');
+        statusEl.innerHTML = '✅ 已通知 <strong>' + agentDisplay + '</strong>，時間：' + ts;
+        statusEl.style.color = '#6ee7b7';
+      } else {
+        throw new Error(result.message || '通知失敗');
       }
-    };
-
-    const resp = await fetch(GAS_WEBAPP_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    const result = await resp.json();
-
-    if (result.success) {
-      btn.textContent = '✅ 已儲存';
-      btn.style.background = '#16a34a';
-      btn.style.color = '#fff';
-      status.textContent = '✅ 已成功儲存！業務員將收到通知，時間：' + result.timestamp;
-    } else {
-      throw new Error(result.message || '儲存失敗');
+    } catch(err) {
+      statusEl.textContent = '⚠️ 通知未送達（' + err.message + '），請截圖傳給業務員';
+      statusEl.style.color = '#fca5a5';
+      console.error(err);
+    } finally {
+      btn.textContent = '🖨️ 列印 / 存 PDF';
+      btn.disabled = false;
     }
-  } catch(err) {
-    btn.textContent = '❌ 儲存失敗';
-    btn.disabled = false;
-    status.textContent = '⚠️ ' + err.message + '，請截圖傳給業務員';
-    console.error(err);
+  } else {
+    // 沒有 GAS URL，直接列印
+    statusEl.textContent = '（業務員尚未設定後端，請截圖傳給業務員）';
   }
+
+  // 列印（通知送出後執行）
+  setTimeout(() => window.print(), 400);
 }
+
 
 function shareResult() {
   const name  = G('p-name').value || '保戶';
