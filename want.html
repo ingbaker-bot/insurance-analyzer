@@ -602,7 +602,7 @@ async function printAndNotify() {
 
   // 先送通知給業務員（背景執行，不等待）
   if (GAS_WEBAPP_URL) {
-    btn.textContent = '⏳ 通知業務員中…';
+    btn.textContent = '⏳ 處理中請稍後…';
     btn.disabled = true;
     try {
       const r = lastResult || {};
