@@ -2292,7 +2292,15 @@ function renderWantPanel() {
 
       <!-- 四金總覽 -->
       <div class="wsum" style="margin-top:14px">
-        <h3>📊 四金需求缺口總覽 — <span id="wsum-name">客戶</span></h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <h3 style="margin:0">📊 四金需求缺口總覽 — <span id="wsum-name">客戶</span></h3>
+          <button onclick="openPrintReport_admin()"
+            style="padding:7px 16px;background:#1a1a2e;color:#c9a84c;border:1.5px solid #c9a84c;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap"
+            onmouseover="this.style.background='#c9a84c';this.style.color='#1a1a2e'"
+            onmouseout="this.style.background='#1a1a2e';this.style.color='#c9a84c'">
+            🖨️ 列印建議書
+          </button>
+        </div>
         <div class="wsum-grid">
           <div class="wsi"><div class="wsl">退休金缺口</div><div class="wsv" id="wsum-r">—萬</div></div>
           <div class="wsi"><div class="wsl">醫療金缺口</div><div class="wsv" id="wsum-m">—萬</div></div>
@@ -2426,10 +2434,14 @@ function wCalc() {
     lbl.textContent = name + (pos ? '缺口' : '充足');
     val.innerHTML = fmt(Math.abs(gap)) + '<span class="wgu">萬</span>';
   };
-  const sumVal = (id, val) => {
+  const sumVal = (id, val, planKey) => {
     const e = document.getElementById(id); if(!e) return;
-    e.textContent = fmt(val) + ' 萬';
-    e.className = 'wsv ' + (val > 0 ? 'r' : 'g');
+    if(planKey && !wIsPlan(planKey)){
+      e.textContent = '暫不規劃'; e.className = 'wsv skip';
+    } else {
+      e.textContent = fmt(val) + ' 萬';
+      e.className = 'wsv ' + (val > 0 ? 'r' : 'g');
+    }
   };
 
   // Have 值（統一從 buildDashboardData 取，手動模式時 override 已套用）
@@ -2556,8 +2568,8 @@ function wCalc() {
   const m = wIsPlan('medical')? mGap : 0;
   const l = wIsPlan('ltc')    ? lGap : 0;
   const f = wIsPlan('family') ? fGap : 0;
-  sumVal('wsum-r', r); sumVal('wsum-m', m);
-  sumVal('wsum-l', l); sumVal('wsum-f', f);
+  sumVal('wsum-r', r, 'retire'); sumVal('wsum-m', m, 'medical');
+  sumVal('wsum-l', l, 'ltc'); sumVal('wsum-f', f, 'family');
   const grand = r + m + l + f;
   const te = document.getElementById('wsum-tot');
   if(te){ te.textContent = fmt(grand) + ' 萬'; te.className = 'wtv' + (grand>0?'':' g'); }
@@ -2828,4 +2840,293 @@ function copyShareLink() {
 
 </script>
 </body>
-</html>
+</html// ══════════════════════════════════════════════════════════════
+// 四金需求建議書列印函數（want.html 和 admin.html 共用邏輯）
+// 橫式 A4，類保險建議書格式
+// ══════════════════════════════════════════════════════════════
+
+function buildPrintReport(data) {
+  // data 格式：
+  // { name, age, salary, agentName,
+  //   retire: { plan, need, have, gap, yrs, mon, rep, labor, saved, surv, ret },
+  //   medical: { plan, ciWant, ciHave, ciGap, cancerWant, cancerHave, cancerGap,
+  //              roomWant, roomHave, miscWant, miscHave, miscGap, surgWant, surgHave, surgGap },
+  //   ltc:     { plan, ciWant, ciHave, ciGap, lCare, lYrs, lNeed, lHave, lGap },
+  //   family:  { plan, lc, edu, debt, tot, have, gap } }
+
+  const fmt = v => (Math.round((v||0)*10)/10).toLocaleString('zh-TW',{maximumFractionDigits:1});
+  const fmtE = v => Math.round(v||0).toLocaleString('zh-TW');
+  const today = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'});
+  const planBadge = on => on
+    ? '<span style="background:#1a1a7e;color:#fff;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px">納入規劃</span>'
+    : '<span style="background:#94a3b8;color:#fff;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:6px">暫不規劃</span>';
+
+  // 計算式字串
+  const retFormula = data.retire.plan
+    ? `月薪 ${fmt(data.retire.mon)} 萬 × 替代率 × 12 × ${data.retire.yrs} 年 = 需求 ${fmt(data.retire.need)} 萬`
+      + `<br>− 已準備 ${fmt(data.retire.saved)} + 勞保 ${fmt(data.retire.labor*12*data.retire.yrs)} + 生存金 ${fmt(data.retire.surv*data.retire.yrs)} = 已有 ${fmt(data.retire.have)} 萬`
+    : '暫不規劃';
+
+  const ltcFormula = data.ltc.plan
+    ? `照護月費 ${fmt(data.ltc.lCare)} 萬 × 12 × ${data.ltc.lYrs} 年 = ${fmt(data.ltc.lNeed)} 萬`
+      + `<br>− 失能月給 ${fmt(data.ltc.lHave)} 萬 − 重大傷病 ${fmt(data.ltc.ciHave)} 萬 = 缺口 ${fmt(data.ltc.lGap)} 萬`
+    : '暫不規劃';
+
+  const famFormula = data.family.plan
+    ? `生活費 ${fmt(data.family.lc)} + 教育金 ${fmt(data.family.edu)} + 借貸 ${fmt(data.family.debt)} = 需求 ${fmt(data.family.tot)} 萬`
+      + `<br>− 現有壽險 ${fmt(data.family.have)} 萬 = 缺口 ${fmt(data.family.gap)} 萬`
+    : '暫不規劃';
+
+  // 四金總缺口
+  const grand = (data.retire.plan?data.retire.gap:0) + (data.medical.plan?data.medical.gap:0)
+              + (data.ltc.plan?data.ltc.gap:0) + (data.family.plan?data.family.gap:0);
+
+  const gapCell = (plan, gap) => plan
+    ? `<td style="text-align:right;font-weight:700;font-size:16px;color:${gap>0?'#dc2626':'#16a34a'}">${fmt(gap)} 萬</td>`
+    : `<td style="text-align:right;font-size:12px;color:#94a3b8">暫不規劃</td>`;
+
+  return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<style>
+@page { size: A4 landscape; margin: 12mm 14mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans TC', 'PingFang TC', sans-serif; font-size: 11px; color: #1a1a2e; background: #fff; }
+.page { width: 100%; }
+
+/* 頁首 */
+.hdr { display: flex; align-items: center; justify-content: space-between;
+       border-bottom: 3px solid #1a1a2e; padding-bottom: 8px; margin-bottom: 10px; }
+.hdr-logo { font-size: 20px; font-weight: 700; letter-spacing: 2px; color: #1a1a2e; }
+.hdr-logo span { font-size: 11px; font-weight: 400; color: #64748b; margin-left: 8px; }
+.hdr-meta { text-align: right; font-size: 10px; color: #64748b; line-height: 1.8; }
+.hdr-meta strong { color: #1a1a2e; font-size: 13px; }
+
+/* 客戶資訊列 */
+.client-bar { display: flex; gap: 0; margin-bottom: 10px;
+              border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
+.client-cell { flex: 1; padding: 6px 12px; border-right: 1px solid #e2e8f0; }
+.client-cell:last-child { border-right: none; }
+.client-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+.client-val { font-size: 13px; font-weight: 600; color: #1a1a2e; margin-top: 1px; }
+
+/* 四金區塊：2×2 grid */
+.gold-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.gold-box { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.gold-box-hdr { padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; }
+.gold-box-ttl { font-size: 12px; font-weight: 700; }
+.gold-box-body { padding: 8px 10px; }
+
+/* Have / Need 表格 */
+.calc-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.calc-table td { padding: 3px 6px; border-bottom: 1px solid #f1f5f9; }
+.calc-table tr:last-child td { border-bottom: none; }
+.calc-table .lbl { color: #64748b; width: 55%; }
+.calc-table .val { text-align: right; font-family: 'DM Mono', monospace; }
+.calc-table .sep td { border-top: 1.5px solid #e2e8f0; border-bottom: none; }
+.calc-table .gap-row td { font-weight: 700; font-size: 11px; }
+.formula { font-size: 9.5px; color: #475569; line-height: 1.7;
+           background: #f8fafc; border-left: 3px solid #cbd5e1;
+           padding: 4px 8px; margin-top: 6px; border-radius: 0 4px 4px 0; }
+
+/* 彩色標頭 */
+.hdr-retire  { background: #eff6ff; } .ttl-retire  { color: #1d4ed8; }
+.hdr-medical { background: #ecfeff; } .ttl-medical { color: #0e7490; }
+.hdr-ltc     { background: #f5f3ff; } .ttl-ltc     { color: #6d28d9; }
+.hdr-family  { background: #fef2f2; } .ttl-family  { color: #991b1b; }
+
+/* 總覽列 */
+.summary-bar { border: 2px solid #1a1a2e; border-radius: 8px; padding: 8px 14px;
+               display: flex; align-items: center; justify-content: space-between; }
+.summary-items { display: flex; gap: 20px; }
+.sum-item { text-align: center; }
+.sum-lbl { font-size: 9px; color: #64748b; }
+.sum-val { font-size: 13px; font-weight: 700; color: #dc2626; }
+.sum-val.ok { color: #16a34a; }
+.sum-val.skip { color: #94a3b8; font-size: 10px; }
+.grand-lbl { font-size: 11px; color: #64748b; }
+.grand-val { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+
+/* 頁尾 */
+.footer { margin-top: 8px; font-size: 9px; color: #94a3b8; text-align: center;
+          border-top: 1px solid #e2e8f0; padding-top: 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 頁首 -->
+  <div class="hdr">
+    <div>
+      <div class="hdr-logo">保障需求分析報告 <span>四金缺口規劃</span></div>
+      <div style="font-size:10px;color:#94a3b8;margin-top:2px">本報告依客戶填寫資料試算，僅供參考，實際規劃請洽業務員</div>
+    </div>
+    <div class="hdr-meta">
+      <strong>${data.agentName || '您的業務員'}</strong><br>
+      製表日期：${today}<br>
+      業務員聯絡：—
+    </div>
+  </div>
+
+  <!-- 客戶資訊列 -->
+  <div class="client-bar">
+    <div class="client-cell">
+      <div class="client-lbl">客戶姓名</div>
+      <div class="client-val">${data.name || '—'}</div>
+    </div>
+    <div class="client-cell">
+      <div class="client-lbl">年齡</div>
+      <div class="client-val">${data.age || '—'} 歲</div>
+    </div>
+    <div class="client-cell">
+      <div class="client-lbl">月薪（稅前）</div>
+      <div class="client-val">${fmt(data.salary)} 萬</div>
+    </div>
+    <div class="client-cell">
+      <div class="client-lbl">四金缺口合計</div>
+      <div class="client-val" style="color:#dc2626;font-size:16px">${fmt(grand)} 萬</div>
+    </div>
+  </div>
+
+  <!-- 四金 2×2 -->
+  <div class="gold-grid">
+
+    <!-- 退休金 -->
+    <div class="gold-box">
+      <div class="gold-box-hdr hdr-retire">
+        <span class="gold-box-ttl ttl-retire">🏖 退休金規劃</span>
+        ${planBadge(data.retire.plan)}
+        <span style="font-weight:700;font-size:14px;color:${data.retire.plan?(data.retire.gap>0?'#dc2626':'#16a34a'):'#94a3b8'}">
+          ${data.retire.plan ? fmt(data.retire.gap)+' 萬' : '暫不規劃'}
+        </span>
+      </div>
+      <div class="gold-box-body">
+        <table class="calc-table">
+          <tr><td class="lbl">退休後年數</td><td class="val">${data.retire.yrs} 年（${data.retire.ret}→${data.retire.life}歲）</td></tr>
+          <tr><td class="lbl">退休月需求</td><td class="val">${fmt(data.retire.mon)} 萬/月</td></tr>
+          <tr><td class="lbl">退休總需求</td><td class="val">${fmt(data.retire.need)} 萬</td></tr>
+          <tr class="sep"><td></td><td></td></tr>
+          <tr><td class="lbl">− 勞保年金（總計）</td><td class="val">${fmt(data.retire.labor*12*data.retire.yrs)} 萬</td></tr>
+          <tr><td class="lbl">− 保險生存金（總計）</td><td class="val">${fmt(data.retire.surv*data.retire.yrs)} 萬</td></tr>
+          <tr><td class="lbl">− 已準備退休金</td><td class="val">${fmt(data.retire.saved)} 萬</td></tr>
+          <tr class="sep gap-row"><td class="lbl" style="font-weight:700">退休金缺口</td>
+            <td class="val" style="color:${data.retire.gap>0?'#dc2626':'#16a34a'}">${data.retire.plan?fmt(data.retire.gap)+' 萬':'—'}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 醫療金 -->
+    <div class="gold-box">
+      <div class="gold-box-hdr hdr-medical">
+        <span class="gold-box-ttl ttl-medical">🏥 醫療金規劃</span>
+        ${planBadge(data.medical.plan)}
+        <span style="font-weight:700;font-size:14px;color:${data.medical.plan?(data.medical.gap>0?'#dc2626':'#16a34a'):'#94a3b8'}">
+          ${data.medical.plan ? fmt(data.medical.gap)+' 萬' : '暫不規劃'}
+        </span>
+      </div>
+      <div class="gold-box-body">
+        <table class="calc-table">
+          <tr><td class="lbl">病房差額目標</td><td class="val">${fmtE(data.medical.roomWant)} 元/日
+            ${data.medical.roomHave>0?'（已有 '+fmtE(data.medical.roomHave)+' 元/日）':''}</td></tr>
+          <tr><td class="lbl">重大傷病目標 / 已有</td><td class="val">${fmt(data.medical.ciWant)} / ${fmt(data.medical.ciHave)} 萬
+            → 缺 ${fmt(data.medical.ciGap)} 萬</td></tr>
+          <tr><td class="lbl">癌症一次金目標 / 已有</td><td class="val">${fmt(data.medical.cancerWant)} / ${fmt(data.medical.cancerHave)} 萬
+            → 缺 ${fmt(data.medical.cancerGap)} 萬</td></tr>
+          <tr><td class="lbl">實支雜費目標 / 已有</td><td class="val">${fmt(data.medical.miscWant)} / ${fmt(data.medical.miscHave)} 萬
+            → 缺 ${fmt(data.medical.miscGap)} 萬</td></tr>
+          <tr><td class="lbl">手術費目標 / 已有</td><td class="val">${fmt(data.medical.surgWant)} / ${fmt(data.medical.surgHave)} 萬
+            → 缺 ${fmt(data.medical.surgGap)} 萬</td></tr>
+          <tr class="sep gap-row"><td class="lbl" style="font-weight:700">醫療金缺口</td>
+            <td class="val" style="color:${data.medical.gap>0?'#dc2626':'#16a34a'}">${data.medical.plan?fmt(data.medical.gap)+' 萬':'—'}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 長照金 -->
+    <div class="gold-box">
+      <div class="gold-box-hdr hdr-ltc">
+        <span class="gold-box-ttl ttl-ltc">💪 長照金規劃</span>
+        ${planBadge(data.ltc.plan)}
+        <span style="font-weight:700;font-size:14px;color:${data.ltc.plan?(data.ltc.gap>0?'#dc2626':'#16a34a'):'#94a3b8'}">
+          ${data.ltc.plan ? fmt(data.ltc.gap)+' 萬' : '暫不規劃'}
+        </span>
+      </div>
+      <div class="gold-box-body">
+        <table class="calc-table">
+          <tr><td class="lbl">重大傷病一次金目標</td><td class="val">${fmt(data.ltc.ciWant)} 萬（已有 ${fmt(data.ltc.ciHave)} 萬）</td></tr>
+          <tr><td class="lbl">照護月費</td><td class="val">${fmt(data.ltc.lCare)} 萬/月</td></tr>
+          <tr><td class="lbl">照護年數</td><td class="val">${data.ltc.lYrs} 年</td></tr>
+          <tr><td class="lbl">長照總需求</td><td class="val">${fmt(data.ltc.lNeed)} 萬</td></tr>
+          <tr><td class="lbl">− 失能月給（總計）</td><td class="val">${fmt(data.ltc.lHave)} 萬</td></tr>
+          <tr class="sep gap-row"><td class="lbl" style="font-weight:700">長照金缺口</td>
+            <td class="val" style="color:${data.ltc.gap>0?'#dc2626':'#16a34a'}">${data.ltc.plan?fmt(data.ltc.gap)+' 萬':'—'}</td></tr>
+        </table>
+        <div class="formula">${ltcFormula}</div>
+      </div>
+    </div>
+
+    <!-- 家庭責任金 -->
+    <div class="gold-box">
+      <div class="gold-box-hdr hdr-family">
+        <span class="gold-box-ttl ttl-family">🏠 家庭責任金</span>
+        ${planBadge(data.family.plan)}
+        <span style="font-weight:700;font-size:14px;color:${data.family.plan?(data.family.gap>0?'#dc2626':'#16a34a'):'#94a3b8'}">
+          ${data.family.plan ? fmt(data.family.gap)+' 萬' : '暫不規劃'}
+        </span>
+      </div>
+      <div class="gold-box-body">
+        <table class="calc-table">
+          <tr><td class="lbl">家庭月支出 × 保障年數</td><td class="val">${fmt(data.family.lc)} 萬</td></tr>
+          <tr><td class="lbl">子女教育金</td><td class="val">${fmt(data.family.edu)} 萬</td></tr>
+          <tr><td class="lbl">借貸餘額</td><td class="val">${fmt(data.family.debt)} 萬</td></tr>
+          <tr><td class="lbl">家責總需求</td><td class="val">${fmt(data.family.tot)} 萬</td></tr>
+          <tr><td class="lbl">− 現有壽險</td><td class="val">${fmt(data.family.have)} 萬</td></tr>
+          <tr class="sep gap-row"><td class="lbl" style="font-weight:700">家庭責任金缺口</td>
+            <td class="val" style="color:${data.family.gap>0?'#dc2626':'#16a34a'}">${data.family.plan?fmt(data.family.gap)+' 萬':'—'}</td></tr>
+        </table>
+        <div class="formula">${famFormula}</div>
+      </div>
+    </div>
+
+  </div><!-- /gold-grid -->
+
+  <!-- 總覽列 -->
+  <div class="summary-bar">
+    <div class="summary-items">
+      <div class="sum-item">
+        <div class="sum-lbl">退休金缺口</div>
+        <div class="sum-val ${!data.retire.plan?'skip':data.retire.gap<=0?'ok':''}">${data.retire.plan?fmt(data.retire.gap)+' 萬':'暫不規劃'}</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-lbl">醫療金缺口</div>
+        <div class="sum-val ${!data.medical.plan?'skip':data.medical.gap<=0?'ok':''}">${data.medical.plan?fmt(data.medical.gap)+' 萬':'暫不規劃'}</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-lbl">長照金缺口</div>
+        <div class="sum-val ${!data.ltc.plan?'skip':data.ltc.gap<=0?'ok':''}">${data.ltc.plan?fmt(data.ltc.gap)+' 萬':'暫不規劃'}</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-lbl">家庭責任金缺口</div>
+        <div class="sum-val ${!data.family.plan?'skip':data.family.gap<=0?'ok':''}">${data.family.plan?fmt(data.family.gap)+' 萬':'暫不規劃'}</div>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="grand-lbl">四金缺口合計</div>
+      <div class="grand-val">${fmt(grand)} 萬</div>
+    </div>
+  </div>
+
+  <!-- 頁尾 -->
+  <div class="footer">
+    本報告由保單智能分析系統自動生成，數字為試算值，非保證金額。實際保障需求請與您的業務員確認。
+    &nbsp;｜&nbsp; 業務員：${data.agentName || '—'} &nbsp;｜&nbsp; ${today}
+  </div>
+
+</div>
+</body>
+</html>`;
+}
+
+.wsv.skip{color:#94a3b8!important;font-size:12px!important;font-weight:400!important}
+>
