@@ -558,7 +558,8 @@ function generateResult() {
 
   // 產生分享碼：把關鍵數據壓縮成 base62
   const code = encodeData(r);
-  G('share-code').textContent = code;
+  const _sc = document.getElementById('share-code');
+  if(_sc) _sc.textContent = code;
 
   G('result-card').classList.add('show');
   G('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -661,7 +662,7 @@ function shareResult() {
 }
 
 function copyShareCode() {
-  const code = G('share-code').textContent;
+  const _sc2=document.getElementById('share-code'); const code=_sc2?_sc2.textContent:'';
   const url = window.location.href;
   const text = '【四金需求分享碼】' + code + '\n連結：' + url;
   if (navigator.share) {
