@@ -210,8 +210,8 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
       <div class="fg"><label>勞保年金估算（月領）</label><div style="position:relative"><input class="inp" type="number" id="r-labor" value="2" step="0.5" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/月</span></div></div>
     </div>
     <div class="fg" style="margin-top:12px"><label>已準備退休金</label><div style="position:relative"><input class="inp" type="number" id="r-saved" value="0" step="10" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div></div>
-  <div class="fg"><label>保險生存金（年領）<em>（還本險 / 增額壽）</em></label><div style="position:relative"><input class="inp" type="number" id="r-surv" value="0" step="1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/年</span></div></div>
-    <div class="fg" style="margin-top:8px"><label>保險生存金 <em>（年領估算）</em></label><div style="position:relative"><input class="inp" type="number" id="r-surv" value="0" step="1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/年</span></div></div>
+  <div class="fg"><label>保險生存金（年領）<em>（還本險 / 增額壽）</em></label><div style="position:relative"><input class="inp" type="number" id="r-surv" value="0" step="0.1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬/年</span></div></div>
+
   </div>
 </div>
 <!-- ═══ 醫療金 ═══ -->
@@ -485,7 +485,6 @@ function calcAll() {
   const labor  = n('r-labor'), saved = n('r-saved'), surv = n('r-surv');
   const yrs    = Math.max(0, life - ret);
   const rNeed  = salary * rep * 12 * yrs;
-  const surv   = n('r-surv');
   const rHave  = saved + labor * 12 * yrs + surv * yrs;
   const rGap   = Math.max(0, rNeed - rHave);
 
@@ -515,8 +514,7 @@ function calcAll() {
   const lCiEl   = document.getElementById('l-ci-want');
   const lCiWant = lCiEl.value === 'custom' ? (n('l-ci-inp') || 100) : (parseFloat(lCiEl.value) || 100);
   const hOnce   = n('h-oncetime');
-  const hDisMon = n('h-dismon');
-  const lCiGap  = Math.max(0, lCiWant - hOnce);
+    const lCiGap  = Math.max(0, lCiWant - hOnce);
   const lNeed   = lCare * 12 * lYrs;
   const lHave   = hDisMon * 12 * lYrs;
   const lGap    = lCiGap + Math.max(0, lNeed - lHave);
