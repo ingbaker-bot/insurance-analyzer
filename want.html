@@ -299,6 +299,21 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
     </div>
   </div>
   <div class="gold-bdy open" id="wbody-ltc">
+    <div class="wsec" style="color:#7c3aed">⚡ 重大傷病一次金目標</div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>確診重大傷病時希望有多少一次金</label>
+      <select class="sel" id="l-ci-want" onchange="handleWantCustom('l-ci-want','l-ci-custom')">
+        <option value="50">50萬（基本）</option>
+        <option value="100" selected>100萬（建議）</option>
+        <option value="200">200萬（充裕）</option>
+        <option value="300">300萬（高額）</option>
+        <option value="custom">自訂輸入…</option>
+      </select>
+      <div id="l-ci-custom" style="display:none;margin-top:5px;position:relative">
+        <input class="inp" type="number" id="l-ci-inp" placeholder="萬" step="10" oninput="calcAll()">
+        <span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span>
+      </div>
+    </div>
     <div class="wsec" style="color:#7c3aed">👴 長期照護方式</div>
     <div class="grid2">
       <div class="fg"><label>希望的照護方式</label>
@@ -496,7 +511,7 @@ function calcAll() {
   const mSurgWant = n('m-surg-want')   || 20;    // 醫療中：手術費目標
   const hWard     = n('h-ward');
   const hMisc     = n('h-misc');
-  const hCi       = n('h-ci')   || 0;            // 重大傷病 Have（若有獨立欄位）
+  const hCi       = 0;  // 保戶版用 h-oncetime 合計，重大傷病不獨立
   const hCancer   = n('h-oncetime');              // 癌症/重疾 Have（合計）
   const hSurg     = n('h-surg') || 0;
   const hDisMon   = n('h-dismon');
@@ -512,7 +527,7 @@ function calcAll() {
   const lYrsEl  = document.getElementById('l-yrs');
   const lYrs    = lYrsEl.value === 'custom' ? (n('l-yrs-inp') || 7) : (parseFloat(lYrsEl.value) || 7);
   const lCiEl   = document.getElementById('l-ci-want');
-  const lCiWant = lCiEl.value === 'custom' ? (n('l-ci-inp') || 100) : (parseFloat(lCiEl.value) || 100);
+  const lCiWant = lCiEl ? (lCiEl.value === 'custom' ? (n('l-ci-inp') || 100) : (parseFloat(lCiEl.value) || 100)) : 100;
   const hOnce   = n('h-oncetime');
     const lCiGap  = Math.max(0, lCiWant - hOnce);
   const lNeed   = lCare * 12 * lYrs;
