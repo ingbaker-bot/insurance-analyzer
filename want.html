@@ -440,9 +440,8 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
   <div id="notify-status" style="margin-top:10px;font-size:12px;text-align:center;min-height:20px;color:rgba(255,255,255,.8)"></div>
 
   <div class="share-box">
-    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px">📋 截圖後傳給業務員</div>
-    <div class="share-hint" style="font-size:12px;line-height:1.8">
-      按下「列印 / 存 PDF」會同時通知業務員並開啟列印視窗<br>
+       <div class="share-hint" style="font-size:12px;line-height:1.8">
+      按下「列印 / 存 PDF」即將開啟列印視窗<br>
       業務員收到 Email 通知後會聯絡您
     </div>
   </div>
@@ -1059,7 +1058,7 @@ async function printAndNotify() {
 
   // 先送通知給業務員（背景執行，不等待）
   if (GAS_WEBAPP_URL) {
-    btn.textContent = '⏳ 通知業務員中…';
+    btn.textContent = '⏳ 處理中請稍後…';
     btn.disabled = true;
     try {
       const r = lastResult || {};
