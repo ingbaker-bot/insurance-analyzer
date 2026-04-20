@@ -408,6 +408,8 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
   #panel-want .gold-bdy { display: block !important; }
 }
 
+
+.wsv.skip{color:#94a3b8!important;font-size:12px!important;font-weight:400!important}
 </style>
 </head>
 <body>
@@ -431,6 +433,11 @@ tbody td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #f0ece0
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
       <button class="btn-outline" onclick="document.getElementById('project-input').click()">📂 載入專案</button>
       <button id="save-project-btn" class="btn-gold-sm" style="display: none;" onclick="saveProject()">💾 儲存專案檔</button>
+    <button onclick="window.open('payment.html','_blank')"
+      style="padding:7px 14px;background:transparent;border:1.5px solid rgba(201,168,76,.5);color:var(--gold);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap"
+      title="開啟繳費記錄表">
+      💳 繳費記錄
+    </button>
       <button id="clear-all-btn" class="btn-outline" style="display: none; color: var(--red); border-color: #ffcccc; background: #fff5f5;" onclick="clearAllData()">🗑️ 清空資料</button>
     </div>
   </div>
@@ -1465,6 +1472,12 @@ function downloadRaw(e, id) {
   const f = getEntryById(id);
   const name = f.data ? (f.data.insuredName || '原始文件') : '原始文件';
   const blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8' });
+  // 同步存到 localStorage 讓繳費記錄表可以直接匯入
+  try {
+    const key = 'insurance_project_' + new Date().toISOString().slice(0,10);
+    localStorage.setItem(key, JSON.stringify(exportData));
+  } catch(e) {}
+
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `${name}_原始文字_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.txt`;
@@ -1716,6 +1729,12 @@ function downloadTxt(id) {
   
   t += '分析時間：' + new Date().toLocaleString('zh-TW');
   const blob = new Blob(['\uFEFF' + t], { type: 'text/plain;charset=utf-8' });
+  // 同步存到 localStorage 讓繳費記錄表可以直接匯入
+  try {
+    const key = 'insurance_project_' + new Date().toISOString().slice(0,10);
+    localStorage.setItem(key, JSON.stringify(exportData));
+  } catch(e) {}
+
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `${d.insuredName || '客戶'}保單明細_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.txt`;
@@ -1747,6 +1766,12 @@ function saveProject() {
   };
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  // 同步存到 localStorage 讓繳費記錄表可以直接匯入
+  try {
+    const key = 'insurance_project_' + new Date().toISOString().slice(0,10);
+    localStorage.setItem(key, JSON.stringify(exportData));
+  } catch(e) {}
+
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   
@@ -2838,9 +2863,8 @@ function copyShareLink() {
 }
 
 
-</script>
-</body>
-</html// ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
 // 四金需求建議書列印函數（want.html 和 admin.html 共用邏輯）
 // 橫式 A4，類保險建議書格式
 // ══════════════════════════════════════════════════════════════
@@ -3128,5 +3152,82 @@ body { font-family: 'Noto Sans TC', 'PingFang TC', sans-serif; font-size: 11px; 
 </html>`;
 }
 
-.wsv.skip{color:#94a3b8!important;font-size:12px!important;font-weight:400!important}
->
+function openPrintReport_admin() {
+  const db   = buildDashboardData();
+  const toW  = v => Math.round((v||0)/10000*10)/10;
+  const gV   = id => { const e=document.getElementById(id); return e?(parseFloat(e.value)||0):0; };
+
+  const nameEl = document.getElementById('want-name-inp');
+  const name   = nameEl ? nameEl.value : (db.insuredName || '客戶');
+
+  const ret    = gV('r-ret'), surv = gV('r-surv'), labor = gV('r-labor');
+  const life   = wGetCustomVal('r-life','r-life-inp',85);
+  const repRaw = wGetCustomVal('r-rep','r-rep-inp',70);
+  const rep    = repRaw > 1 ? repRaw/100 : repRaw;
+  const salary = gV('p-salary'), saved = gV('r-saved');
+  const yrs    = Math.max(0, life - ret);
+  const rMon   = salary * rep;
+  const rNeed  = rMon * 12 * yrs;
+  const rHave  = saved + labor*12*yrs + surv*yrs;
+  const rGap   = Math.max(0, rNeed - rHave);
+
+  const ciWant     = wGetCustomVal('m-ci-want','m-ci-inp',100);
+  const cancerWant = wGetCustomVal('m-cancer-want','m-cancer-inp',100);
+  const miscWant   = wGetCustomVal('m-misc','m-misc-inp',30);
+  const surgWant   = wGetCustomVal('m-surg-want','m-surg-inp',20);
+  const roomWant   = wGetCustomVal('m-room','m-room-inp',1500);
+  const hCi     = toW(db.ciOneTime||0), hCancer = toW(db.cancerOneTime||0);
+  const hMisc   = toW(db.miscLimit||0), hSurg   = toW(db.surgeryLimit||0);
+  const hWard   = db.dailyWard||0;
+  const ciGap     = Math.max(0, ciWant - hCi);
+  const cancerGap = Math.max(0, cancerWant - hCancer);
+  const miscGap   = Math.max(0, miscWant - hMisc);
+  const surgGap   = Math.max(0, surgWant - hSurg);
+  const mGap      = ciGap + cancerGap + miscGap + surgGap;
+
+  const lCiWant = wGetCustomVal('l-ci-want','l-ci-inp',100);
+  const lCare   = wGetCustomVal('l-care','l-care-inp',3.0);
+  const lYrs    = wGetCustomVal('l-yrs','l-yrs-inp',7);
+  const hDisMon = toW(db.disabilityMonthly||0);
+  const lCiGap  = Math.max(0, lCiWant - hCi);
+  const lNeed   = lCare * 12 * lYrs;
+  const lHave   = hDisMon * 12 * lYrs;
+  const lGap    = lCiGap + Math.max(0, lNeed - lHave);
+
+  const fMon   = gV('f-mon');
+  const fYrsEl = document.getElementById('f-yrs');
+  const fYrs   = fYrsEl ? (parseFloat(fYrsEl.value)||10) : 10;
+  const fChild = parseFloat((document.getElementById('f-child')||{}).value)||0;
+  const fEdu   = wGetCustomVal('f-edu','f-edu-inp',300);
+  const fDebt  = gV('f-debt'), hLife = toW(db.lifeTotal||0);
+  const fLC    = fMon * 12 * fYrs;
+  const fEduT  = fEdu * fChild;
+  const fTot   = fDebt + fLC + fEduT;
+  const fGap   = Math.max(0, fTot - hLife);
+
+  const data = {
+    name, age: gV('p-age'), salary,
+    agentName: nameEl ? nameEl.value : '業務員',
+    retire:  { plan:wIsPlan('retire'),  yrs, mon:rMon, need:rNeed, have:rHave, gap:rGap,
+               ret, life, rep, labor, saved, surv },
+    medical: { plan:wIsPlan('medical'), gap:mGap,
+               ciWant, ciHave:hCi, ciGap, cancerWant, cancerHave:hCancer, cancerGap,
+               roomWant, roomHave:hWard, miscWant, miscHave:hMisc, miscGap,
+               surgWant, surgHave:hSurg, surgGap },
+    ltc:     { plan:wIsPlan('ltc'), ciWant:lCiWant, ciHave:hCi, ciGap:lCiGap,
+               lCare, lYrs, lNeed, lHave, lGap },
+    family:  { plan:wIsPlan('family'), lc:fLC, edu:fEduT, debt:fDebt, tot:fTot, have:hLife, gap:fGap }
+  };
+
+  const html = buildPrintReport(data);
+  const win = window.open('', '_blank', 'width=1122,height=794');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
+
+
+</script>
+</body>
+</html>
