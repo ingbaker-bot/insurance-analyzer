@@ -86,6 +86,14 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 /* 結果卡 */
 .result-card{background:var(--ink);border-radius:14px;padding:20px;margin-top:20px;display:none}
 .result-card.show{display:block}
+.detail-block{background:rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.detail-ttl{font-size:11px;font-weight:600;margin-bottom:7px;letter-spacing:.5px}
+.detail-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.75);padding:2px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.detail-row.minus span:first-child{color:rgba(255,255,255,.5)}
+.detail-row.minus span:last-child{color:rgba(255,255,255,.5)}
+.detail-row.gap{border-top:1.5px solid rgba(255,255,255,.25);border-bottom:none;font-weight:600;color:#fff;margin-top:4px;padding-top:5px}
+.detail-row.gap span:last-child{color:#fca5a5}
+.skip-block{font-size:11px;color:rgba(255,255,255,.4);padding:8px 12px;font-style:italic}
 .res-val.skip{color:#94a3b8!important;font-size:13px!important;font-weight:400!important}
 .result-card h3{font-family:'Noto Serif TC',serif;color:var(--gold);font-size:15px;margin-bottom:14px}
 .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
@@ -175,11 +183,15 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 
 <!-- ═══ 退休金 ═══ -->
 <div class="gold-card crd-retire">
-  <div class="gold-hdr">
+  <div class="gold-hdr" onclick="wToggle('retire')">
     <div class="gold-ico">🏖</div>
     <div><div class="gold-ttl">退休金規劃</div><div class="gold-sub">退休後每月需要多少生活費？</div></div>
+    <div class="gold-tog-wrap" style="margin-left:auto">
+      <div class="plan-tog on" id="wpt-retire" onclick="wTogglePlan('retire',event)">📋 納入規劃</div>
+      <button class="chev-btn open" id="wcv-retire">▲</button>
+    </div>
   </div>
-  <div class="gold-bdy">
+  <div class="gold-bdy open" id="wbody-retire">
     <div class="grid2" style="margin-top:14px">
       <div class="fg"><label>目前年齡</label><div style="position:relative"><input class="inp" type="number" id="p-age" value="35" step="1" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">歲</span></div></div>
       <div class="fg"><label>預計退休年齡</label><div style="position:relative"><input class="inp" type="number" id="r-ret" value="65" min="50" max="80" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">歲</span></div></div>
@@ -348,11 +360,15 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
 
 <!-- ═══ 家庭責任金 ═══ -->
 <div class="gold-card crd-family">
-  <div class="gold-hdr">
+  <div class="gold-hdr" onclick="wToggle('family')">
     <div class="gold-ico">🏠</div>
     <div><div class="gold-ttl">家庭責任金</div><div class="gold-sub">若您突然不在，家人每月需要多少生活費？</div></div>
+    <div class="gold-tog-wrap" style="margin-left:auto">
+      <div class="plan-tog on" id="wpt-family" onclick="wTogglePlan('family',event)">📋 納入規劃</div>
+      <button class="chev-btn open" id="wcv-family">▲</button>
+    </div>
   </div>
-  <div class="gold-bdy">
+  <div class="gold-bdy open" id="wbody-family">
     <div class="wsec" style="color:#dc2626">💳 負債項目</div>
     <div class="fg" style="margin-bottom:12px"><label>借貸餘額（房貸＋車貸＋信貸）</label>
       <div style="position:relative"><input class="inp" type="number" id="f-debt" value="0" step="10" oninput="calcAll()"><span style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#888;pointer-events:none">萬</span></div>
@@ -410,6 +426,9 @@ main{max-width:680px;margin:0 auto;padding:20px 16px 80px}
     <span class="res-tot-lbl">四金缺口合計</span>
     <span class="res-tot-val" id="res-tot">—萬</span>
   </div>
+
+  <!-- 計算明細 -->
+  <div id="calc-detail"></div>
 
   <!-- 操作按鈕：一鍵列印＋通知業務員 -->
   <div style="margin-top:14px">
@@ -725,7 +744,7 @@ body { font-family: 'Noto Sans TC', 'PingFang TC', sans-serif; font-size: 11px; 
 // ★ 部署後在這裡填入 GAS Web App URL ★
 // 格式：https://script.google.com/macros/s/XXXXXX/exec
 // ══════════════════════════════════════════
-const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzuWlmS_93RAOuHkixi711ZkXF7JzDiIB-Noco9UDSf-8GbUEnd4l46KATZKH7Mbxnn/exec';  // ← 填這裡
+const GAS_WEBAPP_URL = '';  // ← 填這裡
 
 // 從 URL 讀取業務員名稱
 const urlParams = new URLSearchParams(window.location.search);
@@ -841,7 +860,7 @@ function openPrintReport_want() {
                roomWant, roomHave: hWard, miscWant, miscHave: hMisc, miscGap,
                surgWant, surgHave: hSurg, surgGap },
     ltc:     { plan: isPlan('ltc'),     ciWant: lCiWant, ciHave: hOnce, ciGap: lCiGap,
-               lCare, lYrs, lNeed, lHave, lGap },
+               lCare, lYrs, lNeed, lHave, lGap, gap: lGap },
     family:  { plan: isPlan('family'),  lc: fLC, edu: fEduT, debt: fDebt, tot: fTot, have: hLife, gap: fGap }
   };
 
@@ -865,7 +884,8 @@ function calcAll() {
   let rep      = repEl.value === 'custom' ? (n('r-rep-inp') / 100 || 0.7) : (parseFloat(repEl.value) || 0.7);
   const labor  = n('r-labor'), saved = n('r-saved'), surv = n('r-surv');
   const yrs    = Math.max(0, life - ret);
-  const rNeed  = salary * rep * 12 * yrs;
+  const rMon   = salary * rep;
+  const rNeed  = rMon * 12 * yrs;
   const rHave  = saved + labor * 12 * yrs + surv * yrs;
   const rGap   = Math.max(0, rNeed - rHave);
 
@@ -909,7 +929,9 @@ function calcAll() {
   const fEdu   = fEduEl.value === 'custom' ? (n('f-edu-inp') || 300) : (parseFloat(fEduEl.value) || 300);
   const fDebt  = n('f-debt');
   const hLife  = n('h-life');
-  const fNeed  = fDebt + fMon * 12 * fYrs + fEdu * fChild;
+  const fLC    = fMon * 12 * fYrs;
+  const fEduT  = fEdu * fChild;
+  const fNeed  = fDebt + fLC + fEduT;
   const fGap   = Math.max(0, fNeed - hLife);
 
   lastResult = { rGap, mGap, lGap, fGap,
@@ -919,7 +941,11 @@ function calcAll() {
     fMon, fYrs, fChild, fEdu, fDebt,
     hLife, hWard: n('h-ward'), hMisc, hSurg: n('h-surg'), hDisMon,
     hOnceTime: n('h-oncetime'),
-    agentName, agentCode
+    agentName, agentCode,
+    // 計算中間值（用於結果卡顯示計算式）
+    rYrs: yrs, rNeed: rNeed, rHave: rHave, rMon: rMon,
+    lCiGap, lNeed, lHave,
+    fLC, fEduT, fTot: fNeed
   };
   return lastResult;
 }
@@ -956,6 +982,44 @@ function generateResult() {
   const code = encodeData(r);
   const _sc = document.getElementById('share-code');
   if(_sc) _sc.textContent = code;
+
+  // ── 計算式詳情 ──
+  const fmt1 = v => (Math.round((v||0)*10)/10).toLocaleString('zh-TW',{maximumFractionDigits:1});
+  const detailEl = G('calc-detail');
+  if (detailEl) {
+    const rPlan = isPlanW('retire'), mPlan = isPlanW('medical'),
+          lPlan = isPlanW('ltc'),    fPlan = isPlanW('family');
+    detailEl.innerHTML = `
+    <div style="border-top:1px solid rgba(255,255,255,.15);margin-top:14px;padding-top:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--gold2);margin-bottom:10px;letter-spacing:.5px">📐 計算明細</div>
+      ${rPlan ? `<div class="detail-block">
+        <div class="detail-ttl" style="color:#93c5fd">🏖 退休金</div>
+        <div class="detail-row"><span>退休後年數</span><span>${r.rYrs} 年（${r.ret}→${r.life}歲）</span></div>
+        <div class="detail-row"><span>月需求 ${fmt1(r.salary)} × ${Math.round((r.rep||0.7)*100)}%</span><span>${fmt1(r.rMon)} 萬/月</span></div>
+        <div class="detail-row"><span>總需求 ${fmt1(r.rMon)} × 12 × ${r.rYrs} 年</span><span>${fmt1(r.rNeed)} 萬</span></div>
+        <div class="detail-row minus"><span>− 勞保 ${fmt1(r.labor)} × 12 × ${r.rYrs} 年</span><span>${fmt1(r.labor*12*r.rYrs)} 萬</span></div>
+        <div class="detail-row minus"><span>− 生存金 ${fmt1(r.surv)} × ${r.rYrs} 年</span><span>${fmt1(r.surv*r.rYrs)} 萬</span></div>
+        <div class="detail-row minus"><span>− 已準備退休金</span><span>${fmt1(r.saved)} 萬</span></div>
+        <div class="detail-row gap"><span>退休金缺口</span><span>${fmt1(r.rGap)} 萬</span></div>
+      </div>` : '<div class="detail-block skip-block">🏖 退休金：暫不規劃</div>'}
+      ${lPlan ? `<div class="detail-block">
+        <div class="detail-ttl" style="color:#c4b5fd">💪 長照金</div>
+        <div class="detail-row"><span>重大傷病目標 ${fmt1(r.lCiGap+r.hOnceTime)} 萬 − 已有 ${fmt1(r.hOnceTime)} 萬</span><span>缺 ${fmt1(r.lCiGap)} 萬</span></div>
+        <div class="detail-row"><span>照護費 ${fmt1(r.lCare)} × 12 × ${r.lYrs} 年</span><span>${fmt1(r.lNeed)} 萬</span></div>
+        <div class="detail-row minus"><span>− 失能月給 ${fmt1(r.hDisMon)} × 12 × ${r.lYrs} 年</span><span>${fmt1(r.lHave)} 萬</span></div>
+        <div class="detail-row gap"><span>長照金缺口</span><span>${fmt1(r.lGap)} 萬</span></div>
+      </div>` : '<div class="detail-block skip-block">💪 長照金：暫不規劃</div>'}
+      ${fPlan ? `<div class="detail-block">
+        <div class="detail-ttl" style="color:#fca5a5">🏠 家庭責任金</div>
+        <div class="detail-row"><span>生活費 ${fmt1(r.fMon)} × 12 × ${r.fYrs||10} 年</span><span>${fmt1(r.fLC)} 萬</span></div>
+        <div class="detail-row"><span>教育金 ${fmt1(r.fEdu)} × ${r.fChild||0} 人</span><span>${fmt1(r.fEduT)} 萬</span></div>
+        <div class="detail-row"><span>借貸餘額</span><span>${fmt1(r.fDebt)} 萬</span></div>
+        <div class="detail-row"><span>家責總需求</span><span>${fmt1(r.fTot)} 萬</span></div>
+        <div class="detail-row minus"><span>− 現有壽險</span><span>${fmt1(r.hLife)} 萬</span></div>
+        <div class="detail-row gap"><span>家庭責任金缺口</span><span>${fmt1(r.fGap)} 萬</span></div>
+      </div>` : '<div class="detail-block skip-block">🏠 家庭責任金：暫不規劃</div>'}
+    </div>`;
+  }
 
   G('result-card').classList.add('show');
   G('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
