@@ -729,7 +729,7 @@ body { font-family: 'Noto Sans TC', 'PingFang TC', sans-serif; font-size: 11px; 
 
   <!-- 頁尾 -->
   <div class="footer">
-    本報告由保單智能分析系統自動生成，數字為試算值，非保證金額。實際保障需求請與您的業務員確認。
+    本報告由奈AI保單智能分析生成，數字為試算值，非保證金額。實際保障需求請與您的業務員確認。
     &nbsp;｜&nbsp; 業務員：${data.agentName || '—'} &nbsp;｜&nbsp; ${today}
   </div>
 
@@ -743,7 +743,7 @@ body { font-family: 'Noto Sans TC', 'PingFang TC', sans-serif; font-size: 11px; 
 // ★ 部署後在這裡填入 GAS Web App URL ★
 // 格式：https://script.google.com/macros/s/XXXXXX/exec
 // ══════════════════════════════════════════
-const GAS_WEBAPP_URL = '';  // ← 填這裡
+const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzuWlmS_93RAOuHkixi711ZkXF7JzDiIB-Noco9UDSf-8GbUEnd4l46KATZKH7Mbxnn/exec';  // ← 填這裡
 
 // 從 URL 讀取業務員名稱
 const urlParams = new URLSearchParams(window.location.search);
