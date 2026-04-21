@@ -973,13 +973,16 @@ function parseInsuranceText(text) {
     const amountM = normalizedSeg.match(/(?:新台幣|美元|澳幣|人民幣|歐元|外幣|NT\$|US\$)\s*([\d,]+(?:\.\d+)?)/);
     const allDates = headerSeg.match(/\d{2,3}\/\d{2}\/\d{2}/g) || [];
     
-    const statusMatch = headerSeg.search(/自動墊繳|有效|繳費期滿|已終止|終止/);
+    const statusMatch = headerSeg.search(/自動墊繳|有效|繳費期滿|已終止|終止|催告|停效|寬限期/);
     let status = '有效', stt = 'active';
     if (statusMatch !== -1) {
       const matchText = headerSeg.substring(Math.max(0, statusMatch - 10), statusMatch + 10);
       if (/繳費期滿/.test(matchText)) { status = '繳費期滿'; stt = 'paid'; }
       else if (/自動墊繳/.test(matchText)) { status = '自動墊繳'; stt = 'auto'; }
-      else if (/終止/.test(matchText)) { status = '已終止'; stt = 'expired'; }
+      else if (/終止/.test(matchText))   { status = '已終止';  stt = 'expired'; }
+      else if (/催告/.test(matchText))   { status = '催告中';  stt = 'warning'; }
+      else if (/停效/.test(matchText))   { status = '停效';    stt = 'expired'; }
+      else if (/寬限期/.test(matchText)) { status = '寬限期';  stt = 'warning'; }
     }
 
     let premium = '—';
