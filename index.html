@@ -1218,6 +1218,7 @@ function renderDashboard() {
         style="font-family:inherit;font-size:inherit;font-weight:inherit;color:var(--blue);border:none;border-bottom:2px dashed var(--gold);background:transparent;outline:none;min-width:60px;max-width:150px;cursor:text;"
         title="點擊可修改被保險人姓名"> )</h2>
         <p>系統已自動加總各保單額度。<b>所有欄位皆可點擊修改</b>，以利最終校對確認。</p>
+        <p style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:6px 12px;font-size:11px;margin-top:6px">⚠️ 本分析由 AI 自動解析 PDF，數值及狀態僅供參考，實際保障內容以原始保單條款為準。</p>
       </div>
       <div class="result-actions">
         <button class="btn-outline" style="color: var(--blue); border-color: #bbdefb; background: #e3f2fd;" onclick="window.print()">🖨️ 列印完整報告 (另存 PDF)</button>
@@ -1435,7 +1436,7 @@ function renderPolicy(f) {
       <div class="info-card"><div class="lbl">有效險種</div><div class="val">${d.policies.filter(p=>p.statusType!=='expired').length} 項</div></div>
       <div class="info-card" style="border-left: 3px solid #27ae60;"><div class="lbl">累計生存/分紅金</div><div class="val">${curSym} ${formatNum(d.survivalTotal || 0)}</div><div class="sub">${d.survivalDate ? '最近一期：' + formatNum(parseNum(d.survivalAmount)) + ' (' + d.survivalDate + ')' : '無生存/分紅金紀錄'}</div></div>
     </div>
-    
+    <div style="font-size:10px;color:#92400e;background:#fffbeb;padding:4px 10px;border-left:3px solid #f59e0b;margin-bottom:6px">⚠️ 以下資料由系統自動解析，實際內容以保單正本為準</div>
     <div class="table-wrap"><div class="table-title">📌 投保險種明細</div>
       <div style="overflow-x:auto"><table><thead><tr><th>險種名稱/給付細項</th><th>保險金額</th><th>繳費期滿</th><th>保障期滿</th><th>保險費</th><th>狀態</th></tr></thead><tbody>${tableRows}</tbody></table></div>
     </div>
