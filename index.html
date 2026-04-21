@@ -1207,7 +1207,13 @@ function renderDashboard() {
   <div class="result-panel ${activeTab === 'dashboard' ? 'show' : ''}" id="panel-dashboard">
     <div class="result-header" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
       <div>
-        <h2 style="color: var(--blue);">📊 保單彙總一覽表 ( ${db.insuredName || '客戶'} )</h2>
+        <h2 style="color: var(--blue);">📊 保單彙總一覽表 ( <input
+        type="text"
+        id="db-insured-name"
+        value="${db.insuredName || '客戶'}"
+        onchange="updateDashboardInsuredName(this.value)"
+        style="font-family:inherit;font-size:inherit;font-weight:inherit;color:var(--blue);border:none;border-bottom:2px dashed var(--gold);background:transparent;outline:none;min-width:60px;max-width:150px;cursor:text;"
+        title="點擊可修改被保險人姓名"> )</h2>
         <p>系統已自動加總各保單額度。<b>所有欄位皆可點擊修改</b>，以利最終校對確認。</p>
       </div>
       <div class="result-actions">
