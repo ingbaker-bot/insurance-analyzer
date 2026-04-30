@@ -944,7 +944,7 @@ function parseInsuranceText(text) {
   const skipWords = ['AD','NT','OK','PDF','COM','WWW','HTTP','TEL','FAX','ADD','EMAIL','ID','MAIL','SHAN'];
   
   while ((m = codeRegex.exec(mainSection)) !== null) {
-    const ctx80 = mainSection.substring(Math.max(0, m.index - 20), m.index + 80);
+    const ctx80 = mainSection.substring(m.index, m.index + 80);
     if (!skipWords.includes(m[1]) && !/^\d+$/.test(m[1]) && !foundCodes.find(c => c.code === m[1])
         && !/保單號碼|被保險人|保單幣別/.test(ctx80)) {
        foundCodes.push({ code: m[1], pos: m.index });
@@ -1052,7 +1052,12 @@ function parseInsuranceText(text) {
     }
 
     data.policies.push({
-      name: rawName, amount: amountM ? amountM[1] : '0', 
+      name: rawName, amount: (() => {
+  // 先檢查有無「計劃/單位/型」這類特殊金額
+  const specialM = headerSeg.match(/新台幣\s*(計劃\s*[A-Z]|[雙單雙親個人家庭]+型\s*\d+\s*單位|\d+(?:\.\d+)?\s*單位)/);
+  if (specialM) return specialM[1].trim();
+  return amountM ? amountM[1] : '0';
+})(), 
       paymentEnd: allDates[0] || '—', coverEnd: (/終身/.test(headerSeg.substring(0, 150)) ? '終身' : (allDates[1] || '—')),
       status: status, statusType: stt, premium: premium,
       details: uniqueDetails.slice(0,15)
