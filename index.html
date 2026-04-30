@@ -944,7 +944,7 @@ function parseInsuranceText(text) {
   const skipWords = ['AD','NT','OK','PDF','COM','WWW','HTTP','TEL','FAX','ADD','EMAIL','ID','MAIL','SHAN'];
   
   while ((m = codeRegex.exec(mainSection)) !== null) {
-    const ctx80 = mainSection.substring(m.index, m.index + 80);
+    const ctx80 = mainSection.substring(Math.max(0, m.index - 20), m.index + 80);
     if (!skipWords.includes(m[1]) && !/^\d+$/.test(m[1]) && !foundCodes.find(c => c.code === m[1])
         && !/保單號碼|被保險人|保單幣別/.test(ctx80)) {
        foundCodes.push({ code: m[1], pos: m.index });
@@ -1053,11 +1053,11 @@ function parseInsuranceText(text) {
 
     data.policies.push({
       name: rawName, amount: (() => {
-  // 先檢查有無「計劃/單位/型」這類特殊金額
-  const specialM = headerSeg.match(/新台幣\s*(計劃\s*[A-Z]|[雙單雙親個人家庭]+型\s*\d+\s*單位|\d+(?:\.\d+)?\s*單位)/);
-  if (specialM) return specialM[1].trim();
-  return amountM ? amountM[1] : '0';
-})(), 
+      const hNorm = headerSeg.replace(/\n/g,' ');
+      const sp = hNorm.match(/新台幣\s*(計劃\s*[A-Z]|[雙單親個人家庭]+型\s*\d+\s*單\s*位|\d+(?:\.\d+)?\s*單\s*位)/);
+      if (sp) return sp[1].replace(/\s+/g,' ').trim();
+      return amountM ? amountM[1] : '0';
+    })(), 
       paymentEnd: allDates[0] || '—', coverEnd: (/終身/.test(headerSeg.substring(0, 150)) ? '終身' : (allDates[1] || '—')),
       status: status, statusType: stt, premium: premium,
       details: uniqueDetails.slice(0,15)
@@ -1347,7 +1347,7 @@ function renderPolicy(f) {
   
   if (d.isSummaryMode) {
       const tableRows = d.policies.map(p => {
-        return `<tr><td><strong>${p.name}</strong></td><td>${p.amount}</td>
+        return `<tr><td><strong>${p.name}</strong></td><td contenteditable="true" style="min-width:60px;cursor:text;border-bottom:1px dashed #c9a84c;outline:none" title="點擊可直接修改保險金額">${p.amount}</td>
           <td>${p.paymentEnd}</td><td>${p.coverEnd}</td><td>${p.premium}</td>
           <td><span class="badge badge-ref">${p.status}</span></td></tr>`;
       }).join('');
@@ -1388,7 +1388,7 @@ function renderPolicy(f) {
   const tableRows = d.policies.map(p => {
     const [st, sc] = statusMap[p.statusType] || [p.status, 'badge-active'];
     const detHtml = p.details.length ? `<div style="margin-top:5px">${p.details.map(det => `<div class="detail-item">${det}</div>`).join('')}</div>` : '';
-    return `<tr><td><strong>${p.name}</strong>${detHtml}</td><td>${p.amount}</td>
+    return `<tr><td><strong>${p.name}</strong>${detHtml}</td><td contenteditable="true" style="min-width:60px;cursor:text;border-bottom:1px dashed #c9a84c;outline:none" title="點擊可直接修改保險金額">${p.amount}</td>
       <td>${p.paymentEnd}</td><td>${p.coverEnd}</td><td>${p.premium}</td>
       <td><span class="badge ${sc}">${st}</span></td></tr>`;
   }).join('');
