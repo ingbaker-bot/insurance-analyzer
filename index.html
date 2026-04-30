@@ -944,7 +944,7 @@ function parseInsuranceText(text) {
   const skipWords = ['AD','NT','OK','PDF','COM','WWW','HTTP','TEL','FAX','ADD','EMAIL','ID','MAIL','SHAN'];
   
   while ((m = codeRegex.exec(mainSection)) !== null) {
-    const ctx80 = mainSection.substring(Math.max(0, m.index - 20), m.index + 80);
+    const ctx80 = mainSection.substring(m.index, m.index + 80);
     if (!skipWords.includes(m[1]) && !/^\d+$/.test(m[1]) && !foundCodes.find(c => c.code === m[1])
         && !/保單號碼|被保險人|保單幣別/.test(ctx80)) {
        foundCodes.push({ code: m[1], pos: m.index });
